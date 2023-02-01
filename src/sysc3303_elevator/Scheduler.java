@@ -3,6 +3,8 @@
  */
 package sysc3303_elevator;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -11,62 +13,74 @@ import java.util.concurrent.BlockingQueue;
  */
 public class Scheduler implements Runnable{
 
-	private FloorEvent floorSystem;
-	private Elevator elevator;
-	private BlockingQueue<Object> queue;
+	private ArrayBlockingQueue<Object> floorToSchedulerQueue;
+	private ArrayBlockingQueue<Object> elevatorToSchedulerQueue;
 	
-	public Object floorNumber = null;
-	public Object elevatorNumber = null;
-	public Object time = null;
-	public Object button = null;
+	private ArrayBlockingQueue<Object> schedulerToFloorQueue;
+	private ArrayBlockingQueue<Object> schedulerToElevatorQueue;
 	
-	
-	public Scheduler(FloorEvent floorEvent, Elevator elevator, BlockingQueue queue) {
-		this.elevator = elevator;
-		this.floorEvent = floorEvent;
-		this.queue = queue;
+	public Scheduler(ArrayBlockingQueue<Object> elevatorToSchedulerQueue,ArrayBlockingQueue<Object> schedulerToFloorQueue, 
+			ArrayBlockingQueue<Object> floorToSchedulerQueue, ArrayBlockingQueue<Object> schedulerToElevatorQueue) {
+		
+		this.floorToSchedulerQueue = floorToSchedulerQueue;
+		this.elevatorToSchedulerQueue = elevatorToSchedulerQueue;
+		this.schedulerToFloorQueue = schedulerToFloorQueue;
+		this.schedulerToElevatorQueue = schedulerToElevatorQueue;
 	}
 	
-	/**
-	 * scheduler takes inputs from floor system
-	 * @param item1
-	 * @param item2
-	 * @param item3
-	 * @param item4
-	 
 	
 	/**
 	 * read data sent by elevator -- could return data in form of data structure
-	 */
+	 
 	public Object readDataFromElevator() {
 		// TODO 
 	}
-	
 	*/
+
+	
 	/**
-	 * read data sent by elevator -- could return data in form of data structure
+	 * read data sent by floor and add to elevator queue
 	 */
-	public Object readDataFromFloor() {
-		// TODO 
+	public void readDataFromFloorToElevator() {
+		List<Object> fillerList = new ArrayList<Object>();
+		for (int i = 0; i < floorToSchedulerQueue.size(); i++) {
+			try {
+				fillerList.add(floorToSchedulerQueue.take());
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		for (Object item: fillerList) {
+			try {
+				schedulerToElevatorQueue.put(item);
+			} catch (InterruptedException e) {
+				System.err.println(e);
+			}
+		}
 	}
 	
 	/**
 	 * sends data received from elevator to floor system
 	 */
-	public void sendElevatorDataToFloorSystem(Object item) {
-		queue.put(item);
+	public void sendElevatorDataToFloorSystem() {
+		
 	}
 	
 	@Override
 	public void run() {
-		
-		Object data = readDataFromElevator();
-		
-		
-		sendElevatorDataToFloorSystem(data);
-		try {
-			Thread.sleep(20);
-		} catch (InterruptedException e) {}
+		while (true) {
+			readDataFromFloorToElevator();
+			
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {}
+			
+			sendElevatorDataToFloorSystem();
+			
+			
+			
+		}
 		
 	}
 	
