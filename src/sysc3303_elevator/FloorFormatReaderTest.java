@@ -17,6 +17,11 @@ class FloorFormatReaderTest {
 	}
 
 	@Test
+	void testMultiple() throws IOException {
+		ByteArrayInputStream e = new ByteArrayInputStream("14:05:15.0 2 up 4\n14:05:15.0 1 down 3".getBytes());
+		var reader = new FloorFormatReader(e);
+		assertEquals(new FloorEvent(LocalTime.of(14, 5, 15, 0), 2, Direction.Up, 4), reader.next());
+		assertEquals(new FloorEvent(LocalTime.of(14, 5, 15, 0), 1, Direction.Down, 3), reader.next());
 
 	}
 
