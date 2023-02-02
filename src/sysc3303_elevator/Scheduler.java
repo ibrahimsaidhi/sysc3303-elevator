@@ -13,14 +13,14 @@ import java.util.concurrent.BlockingQueue;
  */
 public class Scheduler implements Runnable{
 
-	private ArrayBlockingQueue<Object> floorToSchedulerQueue;
-	private ArrayBlockingQueue<Object> elevatorToSchedulerQueue;
+	private BlockingQueue<FloorEvent> floorToSchedulerQueue;
+	private BlockingQueue<Object> elevatorToSchedulerQueue;
 	
-	private ArrayBlockingQueue<Object> schedulerToFloorQueue;
-	private ArrayBlockingQueue<Object> schedulerToElevatorQueue;
+	private BlockingQueue<Object> schedulerToFloorQueue;
+	private BlockingQueue<Object> schedulerToElevatorQueue;
 	
-	public Scheduler(ArrayBlockingQueue<Object> elevatorToSchedulerQueue,ArrayBlockingQueue<Object> schedulerToFloorQueue, 
-			ArrayBlockingQueue<Object> floorToSchedulerQueue, ArrayBlockingQueue<Object> schedulerToElevatorQueue) {
+	public Scheduler(BlockingQueue<Object> elevatorToSchedulerQueue, BlockingQueue<Object> schedulerToFloorQueue, 
+			BlockingQueue<FloorEvent> floorToSchedulerQueue, BlockingQueue<Object> schedulerToElevatorQueue) {
 		
 		this.floorToSchedulerQueue = floorToSchedulerQueue;
 		this.elevatorToSchedulerQueue = elevatorToSchedulerQueue;
@@ -42,22 +42,15 @@ public class Scheduler implements Runnable{
 	 * read data sent by floor and add to elevator queue
 	 */
 	public void readDataFromFloorToElevator() {
-		List<Object> fillerList = new ArrayList<Object>();
-		for (int i = 0; i < floorToSchedulerQueue.size(); i++) {
-			try {
-				fillerList.add(floorToSchedulerQueue.take());
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		try {
+			FloorEvent event = floorToSchedulerQueue.take();
+			System.out.println("Event received from Floor. Sending to elevator...");
+			
+			schedulerToElevatorQueue.put(event);
+		} catch (InterruptedException e) {
+			System.err.println(e);
 		}
-		for (Object item: fillerList) {
-			try {
-				schedulerToElevatorQueue.put(item);
-			} catch (InterruptedException e) {
-				System.err.println(e);
-			}
-		}
+		
 	}
 	
 	/**
