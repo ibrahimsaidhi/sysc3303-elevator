@@ -14,13 +14,13 @@ import java.util.concurrent.BlockingQueue;
 public class Scheduler implements Runnable{
 
 	private BlockingQueue<FloorEvent> floorToSchedulerQueue;
-	private BlockingQueue<Object> elevatorToSchedulerQueue;
+	private BlockingQueue<Message> elevatorToSchedulerQueue;
 	
-	private BlockingQueue<Object> schedulerToFloorQueue;
-	private BlockingQueue<Object> schedulerToElevatorQueue;
+	private BlockingQueue<Message> schedulerToFloorQueue;
+	private BlockingQueue<FloorEvent> schedulerToElevatorQueue;
 	
-	public Scheduler(BlockingQueue<Object> elevatorToSchedulerQueue, BlockingQueue<Object> schedulerToFloorQueue, 
-			BlockingQueue<FloorEvent> floorToSchedulerQueue, BlockingQueue<Object> schedulerToElevatorQueue) {
+	public Scheduler(BlockingQueue<Message> elevatorToSchedulerQueue, BlockingQueue<Message> schedulerToFloorQueue, 
+			BlockingQueue<FloorEvent> floorToSchedulerQueue, BlockingQueue<FloorEvent> schedulerToElevatorQueue) {
 		
 		this.floorToSchedulerQueue = floorToSchedulerQueue;
 		this.elevatorToSchedulerQueue = elevatorToSchedulerQueue;
@@ -57,7 +57,14 @@ public class Scheduler implements Runnable{
 	 * sends data received from elevator to floor system
 	 */
 	public void sendElevatorDataToFloorSystem() {
-		
+		try {
+			Message elevatorMessage = elevatorToSchedulerQueue.take();
+			System.out.println("Message received from Elevator. Sending to floor...");
+			
+			schedulerToFloorQueue.put(elevatorMessage);
+		} catch (InterruptedException e) {
+			System.err.println(e);
+		}
 	}
 	
 	@Override
