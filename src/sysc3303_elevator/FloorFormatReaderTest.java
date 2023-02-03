@@ -22,6 +22,7 @@ class FloorFormatReaderTest {
 		var reader = new FloorFormatReader(e);
 		assertEquals(new FloorEvent(LocalTime.of(14, 5, 15, 0), 2, Direction.Up, 4), reader.next());
 		assertEquals(new FloorEvent(LocalTime.of(14, 5, 15, 0), 1, Direction.Down, 3), reader.next());
+
 	}
 
 	@Test
