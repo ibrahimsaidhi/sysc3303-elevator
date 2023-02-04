@@ -9,7 +9,7 @@ import java.util.concurrent.BlockingQueue;
  * @author Ibrahim Said
  *
  */
-public class Scheduler implements Runnable{
+public class Scheduler implements Runnable {
 
 	private BlockingQueue<FloorEvent> floorToSchedulerQueue;
 	private BlockingQueue<Message> elevatorToSchedulerQueue;

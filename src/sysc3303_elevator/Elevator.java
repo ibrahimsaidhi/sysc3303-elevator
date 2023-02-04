@@ -10,7 +10,7 @@ import java.util.concurrent.BlockingQueue;
  *
  * @author Tao Lufula, 101164153
  */
-public class Elevator extends Thread {
+public class Elevator implements Runnable {
 
 	private BlockingQueue<FloorEvent> schedulerToElevatorQueue;
 	private BlockingQueue<Message> elevatorToScheduler;

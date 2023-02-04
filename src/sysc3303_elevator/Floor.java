@@ -11,7 +11,7 @@ import java.util.concurrent.BlockingQueue;
  *
  */
 
-public class Floor extends Thread {
+public class Floor implements Runnable {
 	
 	final int currentFloorNum;
 	private BlockingQueue<FloorEvent> floorToScheduler;
@@ -76,7 +76,7 @@ public class Floor extends Thread {
 	public void run() {
 		while(true) {
 			while(!eventList.isEmpty()) {
-			floorToScheduler(eventList.remove(0));
+				floorToScheduler(eventList.remove(0));
 			}
 			recieveMessage();
 		}
