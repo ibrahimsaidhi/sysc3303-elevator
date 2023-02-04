@@ -15,8 +15,6 @@ public class Elevator implements Runnable {
 	private BlockingQueue<FloorEvent> schedulerToElevatorQueue;
 	private BlockingQueue<Message> elevatorToScheduler;
 
-
-
 	/**
 	 * Constructor for Elevator Class
 	 *
