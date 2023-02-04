@@ -26,7 +26,7 @@ public class Floor extends Thread {
 	 * @param eventList List of events that that have to be validated and passed along 
 	 */
 	
-	public Floor(int currentFloorNum,BlockingQueue<FloorEvent> floorToSchedular, BlockingQueue<Message> schedulerToFloor, ArrayList<FloorEvent> eventList) { //initialize with the floors permanent number and schedular to floor queue 
+	public Floor(int currentFloorNum,BlockingQueue<FloorEvent> floorToSchedular, BlockingQueue<Message> schedulerToFloor, ArrayList<FloorEvent> eventList) {
 		this.currentFloorNum = currentFloorNum;
 		this.floorToScheduler = floorToSchedular; 
 		this.schedulerToFloor = schedulerToFloor;
