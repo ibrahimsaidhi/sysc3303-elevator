@@ -52,11 +52,14 @@ public class Floor implements Runnable {
 	public void floorToScheduler(FloorEvent floorevent) {
 		if(validateRequest(floorevent.direction(), floorevent.carButton())) {
 			try {
+				Logger.println(String.format("Sending '%s'", floorevent.toString()));
 				floorToScheduler.put(floorevent);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		} else {
+			Logger.println(String.format("Invalid floor event '%s'", floorevent));
 		}
 		
 	}
@@ -66,7 +69,8 @@ public class Floor implements Runnable {
 	 */
 	public void recieveMessage() {
 		try {
-			schedulerToFloor.take();
+			var msg = schedulerToFloor.take();
+			Logger.println(String.format("Got '%s'", msg));
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

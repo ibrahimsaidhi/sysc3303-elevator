@@ -4,7 +4,7 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  * Elevator Class
- * 
+ *
  * Class responsible for receiving messages from the Scheduler, process it and
  * then return a complete message.
  *
@@ -16,7 +16,7 @@ public class Elevator implements Runnable {
 	private BlockingQueue<Message> elevatorToScheduler;
 
 
-	
+
 	/**
 	 * Constructor for Elevator Class
 	 *
@@ -27,26 +27,26 @@ public class Elevator implements Runnable {
 		this.schedulerToElevatorQueue = schedulerToElevatorQueue;
 		this.elevatorToScheduler = elevatorToScheduler;
 	}
-	
-	
+
+
 	public void run() {
 		while (true) {
 			try {
-				
+
 				FloorEvent event = this.schedulerToElevatorQueue.take();
-				System.out.println("Elevator received message from scheduler.");
+				Logger.println("Got message from scheduler.");
 
 				Thread.sleep(1000);
 
 				Message message = new Message("Processing FloorEvent : Done");
-				
-				System.out.println("Elevator sending out message to Scheduler");
+
+				Logger.println("Sending out message to Scheduler");
 				elevatorToScheduler.put(message);
 
 			} catch (InterruptedException e) {
-				System.out.println("Elevator Thread interrupted");
+				Logger.println("Elevator Thread interrupted");
 			}
 		}
 	}
-	
+
 }
