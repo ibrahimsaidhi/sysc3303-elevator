@@ -8,6 +8,10 @@ import java.time.LocalTime;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * @author Quinn Parrott
+ *
+ */
 class FloorFormatReaderTest {
 
 	@Test
