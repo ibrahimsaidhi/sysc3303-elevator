@@ -8,6 +8,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+/**
+ * @author Quinn Parrott
+ *
+ */
 public class FloorFormatReader {
 	private BufferedReader inputStream;
 

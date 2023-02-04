@@ -11,7 +11,7 @@ import java.util.concurrent.BlockingQueue;
  *
  */
 
-public class Floor extends Thread {
+public class Floor implements Runnable {
 	
 	final int currentFloorNum;
 	private BlockingQueue<FloorEvent> floorToScheduler;
@@ -26,7 +26,7 @@ public class Floor extends Thread {
 	 * @param eventList List of events that that have to be validated and passed along 
 	 */
 	
-	public Floor(int currentFloorNum,BlockingQueue<FloorEvent> floorToSchedular, BlockingQueue<Message> schedulerToFloor, ArrayList<FloorEvent> eventList) {
+	public Floor(int currentFloorNum, BlockingQueue<FloorEvent> floorToSchedular, BlockingQueue<Message> schedulerToFloor, ArrayList<FloorEvent> eventList) {
 		this.currentFloorNum = currentFloorNum;
 		this.floorToScheduler = floorToSchedular; 
 		this.schedulerToFloor = schedulerToFloor;
@@ -42,7 +42,7 @@ public class Floor extends Thread {
 	 */
 	
 	public boolean validateRequest(Direction direction, int newFloorNum) {
-		return((direction == Direction.Up) && (currentFloorNum > newFloorNum) || (direction == Direction.Down) && (currentFloorNum < newFloorNum));
+		return ((direction == Direction.Up) && (currentFloorNum < newFloorNum)) || ((direction == Direction.Down) && (currentFloorNum > newFloorNum));
 	}
 	/**
 	 * floorToScheduler
@@ -50,13 +50,16 @@ public class Floor extends Thread {
 	 * @param floorevent
 	 */
 	public void floorToScheduler(FloorEvent floorevent) {
-		if(validateRequest(floorevent.direction(), floorevent.floor())) {
+		if(validateRequest(floorevent.direction(), floorevent.carButton())) {
 			try {
+				Logger.println(String.format("Sending '%s'", floorevent.toString()));
 				floorToScheduler.put(floorevent);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		} else {
+			Logger.println(String.format("Invalid floor event '%s'", floorevent));
 		}
 		
 	}
@@ -66,7 +69,8 @@ public class Floor extends Thread {
 	 */
 	public void recieveMessage() {
 		try {
-			schedulerToFloor.take();
+			var msg = schedulerToFloor.take();
+			Logger.println(String.format("Got '%s'", msg));
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -76,7 +80,7 @@ public class Floor extends Thread {
 	public void run() {
 		while(true) {
 			while(!eventList.isEmpty()) {
-			floorToScheduler(eventList.remove(0));
+				floorToScheduler(eventList.remove(0));
 			}
 			recieveMessage();
 		}
