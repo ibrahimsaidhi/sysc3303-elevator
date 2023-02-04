@@ -1,7 +1,5 @@
 package sysc3303_elevator;
 
-import java.security.MessageDigest;
-import java.text.MessageFormat;
 import java.util.concurrent.BlockingQueue;
 
 /**
