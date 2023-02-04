@@ -58,9 +58,6 @@ public class Floor extends Thread {
 				e.printStackTrace();
 			}
 		}
-		else {
-			floorToScheduler(this.eventList.remove(0));
-		}
 		
 	}
 	/**
