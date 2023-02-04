@@ -26,7 +26,7 @@ public class Floor implements Runnable {
 	 * @param eventList List of events that that have to be validated and passed along 
 	 */
 	
-	public Floor(int currentFloorNum,BlockingQueue<FloorEvent> floorToSchedular, BlockingQueue<Message> schedulerToFloor, ArrayList<FloorEvent> eventList) {
+	public Floor(int currentFloorNum, BlockingQueue<FloorEvent> floorToSchedular, BlockingQueue<Message> schedulerToFloor, ArrayList<FloorEvent> eventList) {
 		this.currentFloorNum = currentFloorNum;
 		this.floorToScheduler = floorToSchedular; 
 		this.schedulerToFloor = schedulerToFloor;
@@ -42,7 +42,7 @@ public class Floor implements Runnable {
 	 */
 	
 	public boolean validateRequest(Direction direction, int newFloorNum) {
-		return((direction == Direction.Up) && (currentFloorNum > newFloorNum) || (direction == Direction.Down) && (currentFloorNum < newFloorNum));
+		return ((direction == Direction.Up) && (currentFloorNum < newFloorNum)) || ((direction == Direction.Down) && (currentFloorNum > newFloorNum));
 	}
 	/**
 	 * floorToScheduler
@@ -50,7 +50,7 @@ public class Floor implements Runnable {
 	 * @param floorevent
 	 */
 	public void floorToScheduler(FloorEvent floorevent) {
-		if(validateRequest(floorevent.direction(), floorevent.floor())) {
+		if(validateRequest(floorevent.direction(), floorevent.carButton())) {
 			try {
 				floorToScheduler.put(floorevent);
 			} catch (InterruptedException e) {
