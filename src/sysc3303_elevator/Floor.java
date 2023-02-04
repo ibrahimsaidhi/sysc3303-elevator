@@ -42,7 +42,7 @@ public class Floor extends Thread {
 	 */
 	
 	public boolean validateRequest(Direction direction, int newFloorNum) {
-		return((direction == Direction.Up) && (currentFloorNum > newFloorNum) || (direction == Direction.Down) && (currentFloorNum < newFloorNum));
+		return(!((direction == Direction.Up) && (currentFloorNum > newFloorNum)) || ((direction == Direction.Down) && (currentFloorNum < newFloorNum)));
 	}
 	/**
 	 * floorToScheduler
@@ -50,9 +50,9 @@ public class Floor extends Thread {
 	 * @param floorevent
 	 */
 	public void floorToScheduler(FloorEvent floorevent) {
-		if(validateRequest(floorevent.direction(), floorevent.floor())) {
+		if(validateRequest(floorevent.direction(), floorevent.carButton())) {
 			try {
-				floorToScheduler.put(floorevent);
+				this.floorToScheduler.put(floorevent);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
