@@ -15,7 +15,7 @@ import java.util.concurrent.BlockingQueue;
 public class Elevator extends Thread {
 
 	private BlockingQueue<FloorEvent> schedulerToElevatorQueue;
-	private BlockingQueue<FloorEvent> elevatorToScheduler;
+	private BlockingQueue<Message> elevatorToScheduler;
 
 
 	
@@ -40,7 +40,7 @@ public class Elevator extends Thread {
 
 				Thread.sleep(1000);
 
-				Message message = new Message("Processing FloorEvent : Done"); //class created in different branch
+				Message message = new Message("Processing FloorEvent : Done");
 				
 				System.out.println("Elevator sending out message to Scheduler");
 				elevatorToScheduler.put(message);
