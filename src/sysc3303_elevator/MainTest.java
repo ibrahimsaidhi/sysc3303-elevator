@@ -23,9 +23,9 @@ class MainTest {
 
 		var result = Main.GroupBy(items, item -> item.charAt(0));
 		
-		assertArrayEquals((String[]) result.get('a').toArray(), new String[] {"a1", "a2"});
-		assertArrayEquals((String[]) result.get('b').toArray(), new String[] {"b1", "b2", "b3"});
-		assertArrayEquals((String[]) result.get('c').toArray(), new String[] {"c1", "c2", "c3"});
+		assertArrayEquals(result.get('a').toArray(), new String[] {"a1", "a2"});
+		assertArrayEquals(result.get('b').toArray(), new String[] {"b1", "b2", "b3"});
+		assertArrayEquals(result.get('c').toArray(), new String[] {"c1", "c2", "c3"});
 
 		result.remove('a');
 		result.remove('b');
