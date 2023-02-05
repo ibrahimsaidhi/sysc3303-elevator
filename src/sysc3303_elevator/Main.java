@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -14,16 +15,37 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  */
 public class Main {
+	
+	/**
+	 * Used by `GroupBy` to turn an item into a key.
+	 * 
+	 * @see GroupBy
+	 * @author Quinn Parrott
+	 */
+	public interface GrouperFunction<K, V> { K byKey(V t1); }
+	
+	/**
+	 * Group a collection if items into buckets
+	 * 
+	 * @param collection The list of items.
+	 * @param grouperFun The function that will choose which bucket an item goes into.
+	 * @author Quinn Parrott
+	 */
+	public static <K, V> HashMap<K, ArrayList<V>> GroupBy(Iterable<V> collection, GrouperFunction<K, V> grouperFun) {
+		var groups = new HashMap<K, ArrayList<V>>();
+
+		for (var item : collection) {
+			var key = grouperFun.byKey(item);
+			var groupItems = groups.getOrDefault(key, new ArrayList<>());
+			groupItems.add(item);
+			groups.putIfAbsent(key, groupItems);
+		}
+
+		return groups;
+	}
 
 	public static void Run(ArrayList<FloorEvent> events) {
-		var floors = new HashMap<Integer, ArrayList<FloorEvent>>();
-		Logger.println(String.format("'%s' floor events", events.size()));
-		for (var floorEvent : events) {
-			var floorList = floors.getOrDefault(floorEvent.floor(), new ArrayList<>());
-			floorList.add(floorEvent);
-			Logger.println(String.format("Adding %s", floorEvent.toString()));
-			floors.putIfAbsent(floorEvent.floor(), floorList);
-		}
+		var floors = GroupBy(events, event -> event.floor());
 
 		var floorToSchedulerQueue = new LinkedBlockingQueue<FloorEvent>();
 		var schedulerToFloorQueue = new LinkedBlockingQueue<Message>();
