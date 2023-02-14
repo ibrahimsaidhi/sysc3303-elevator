@@ -16,6 +16,8 @@ public class Scheduler implements Runnable {
 
 	private BlockingQueue<Message> schedulerToFloorQueue;
 	private BlockingQueue<FloorEvent> schedulerToElevatorQueue;
+	
+	private SchedulerState state;
 
 	public Scheduler(BlockingQueue<Message> elevatorToSchedulerQueue, BlockingQueue<Message> schedulerToFloorQueue,
 			BlockingQueue<FloorEvent> floorToSchedulerQueue, BlockingQueue<FloorEvent> schedulerToElevatorQueue) {
@@ -24,16 +26,14 @@ public class Scheduler implements Runnable {
 		this.elevatorToSchedulerQueue = elevatorToSchedulerQueue;
 		this.schedulerToFloorQueue = schedulerToFloorQueue;
 		this.schedulerToElevatorQueue = schedulerToElevatorQueue;
+		this.state = new FloorListeningState(this);
+		
 	}
 
 
-	/**
-	 * read data sent by elevator -- could return data in form of data structure
-
-	public Object readDataFromElevator() {
-		// TODO
+	public void setState(SchedulerState state) {
+		this.state = state;
 	}
-	*/
 
 
 	/**
