@@ -144,7 +144,7 @@ public class Elevator {
 				this.setMotorOn(false);
 				this.setMoving(false);
 
-				System.out.println("Elevator reached floor: " + destinationFloor + ".  Opening doors");
+				System.out.println("Elevator reached floor: " + destinationFloor + ". Motor is OFF. Elevator is not moving... Opening doors");
 				this.setDoorState(DoorState.OPEN);
 
 				System.out.println("Closing doors");

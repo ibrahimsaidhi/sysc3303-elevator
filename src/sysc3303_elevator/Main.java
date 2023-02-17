@@ -56,7 +56,7 @@ public class Main {
 		var f2 = new Floor(2, floorToSchedulerQueue, schedulerToFloorQueue, floors.getOrDefault(2, new ArrayList<>()));
 		var f3 = new Floor(3, floorToSchedulerQueue, schedulerToFloorQueue, floors.getOrDefault(3, new ArrayList<>()));
 		var s1 = new Scheduler(elevatorToSchedulerQueue, schedulerToFloorQueue, floorToSchedulerQueue, schedulerToElevatorQueue);
-		var e1 = new Elevator(schedulerToElevatorQueue, elevatorToSchedulerQueue);
+		var e1 = new ElevatorSubsystem(5,1,schedulerToElevatorQueue, elevatorToSchedulerQueue);
 
 		var threads = new Thread[] {
 			new Thread(f1, "floor_1"),

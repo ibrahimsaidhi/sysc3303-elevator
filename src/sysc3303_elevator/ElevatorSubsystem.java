@@ -1,5 +1,6 @@
 package sysc3303_elevator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -29,11 +30,12 @@ public class ElevatorSubsystem implements Runnable {
 		this.schedulerToElevatorSubsystemQueue = schedulerToElevatorSubsystem;
 		this.elevatorSubsystemToSchedulerQueue = elevatorSubsystemToScheduler;
 		this.elevatorFloors = numberOfFloors;
+		this.elevators = new ArrayList<>();
 
 		// creating elevators given the number of floors. Note: only one elevator will
 		// be used for now
 		for (int i = 0; i < numberOfElevators; i++) {
-			elevators.add(new Elevator(elevatorFloors));
+			this.elevators.add(new Elevator(elevatorFloors));
 		}
 	}
 
