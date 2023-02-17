@@ -9,7 +9,8 @@ public class ElevatorListeningState extends SchedulerState {
 
 	@Override
 	public void dealWithMessage() {
-		scheduler.setState(new FloorSendingState(scheduler));
+		scheduler.setState(new ElevatorSendingState(scheduler));
+		scheduler.listenToElevator();
 	}
 
 }
