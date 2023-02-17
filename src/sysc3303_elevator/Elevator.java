@@ -85,8 +85,16 @@ public class Elevator {
 	public void setButtonLampStates(ButtonLampState[] buttonLampStates) {
 		this.buttonLampStates = buttonLampStates;
 	}
-	
 
+	/**
+	 * method to process events from elevator subsystem and return a complete
+	 * message
+	 * 
+	 * @param event
+	 * @return Message
+	 * 
+	 * @author Tao Lufula, 101164153
+	 */
 	public Message processFloorEvent(FloorEvent event) {
 
 		int carButton = event.carButton();
@@ -108,12 +116,13 @@ public class Elevator {
 					System.out.println("Elevator is on floor " + this.getCurrentFloor() + ". Car button " + carButton
 							+ " lamp is " + this.getButtonLampStates()[carButton]);
 				}
-				
+
 				this.setDoorState(DoorState.CLOSED);
 				this.setMotorOn(true);
 				this.setMoving(true);
 
-				System.out.println("Elevator doors are " + this.getDoorState() + ", motor is ON. Elevator is moving... ");
+				System.out
+						.println("Elevator doors are " + this.getDoorState() + ", motor is ON. Elevator is moving... ");
 
 				if (this.getCurrentFloor() < destinationFloor) {
 
@@ -128,8 +137,8 @@ public class Elevator {
 
 				if (destinationFloor == carButton) {
 					this.getButtonLampStates()[carButton] = ButtonLampState.OFF;
-					System.out
-							.println("car button " + carButton + " lamp is " + this.getButtonLampStates()[destinationFloor]);
+					System.out.println(
+							"car button " + carButton + " lamp is " + this.getButtonLampStates()[destinationFloor]);
 				}
 				this.setCurrentFloor(destinationFloor);
 				this.setMotorOn(false);
@@ -153,5 +162,5 @@ public class Elevator {
 		Message message = new Message("Processing FloorEvent : Done");
 		return message;
 	}
-	
+
 }
