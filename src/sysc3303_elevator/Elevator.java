@@ -19,7 +19,7 @@ public class Elevator {
 	private DoorState doorState;
 	private Direction direction;
 	private ButtonLampState[] buttonLampStates;
-	private List<Integer> requestedFloors;
+	private List<Integer> destinationFloors;
 
 	/**
 	 * Constructor for Elevator Class
@@ -32,7 +32,7 @@ public class Elevator {
 		this.isMotorOn = false;
 		this.doorState = DoorState.CLOSED;
 		this.direction = null;
-		this.requestedFloors = new ArrayList<>();
+		this.destinationFloors = new ArrayList<>();
 
 		this.buttonLampStates = new ButtonLampState[numberOfFloors];
 		Arrays.fill(buttonLampStates, ButtonLampState.OFF);
@@ -85,11 +85,73 @@ public class Elevator {
 	public void setButtonLampStates(ButtonLampState[] buttonLampStates) {
 		this.buttonLampStates = buttonLampStates;
 	}
-
+	
 
 	public Message processFloorEvent(FloorEvent event) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
+		int carButton = event.carButton();
+		int floorButton = event.floor();
+
+		this.destinationFloors.add(floorButton);
+		this.destinationFloors.add(carButton);
+
+		for (int destinationFloor : destinationFloors) {
+
+			if (this.getCurrentFloor() != destinationFloor) {
+
+				// floor request or Car Button request
+				if (destinationFloor == floorButton) {
+					System.out.println("Elevator is on floor " + this.getCurrentFloor()
+							+ " and has been requested on floor " + floorButton);
+				} else {
+					this.getButtonLampStates()[carButton] = ButtonLampState.ON;
+					System.out.println("Elevator is on floor " + this.getCurrentFloor() + ". Car button " + carButton
+							+ " lamp is " + this.getButtonLampStates()[carButton]);
+				}
+				
+				this.setDoorState(DoorState.CLOSED);
+				this.setMotorOn(true);
+				this.setMoving(true);
+
+				System.out.println("Elevator doors are " + this.getDoorState() + ", motor is ON. Elevator is moving... ");
+
+				if (this.getCurrentFloor() < destinationFloor) {
+
+					this.setDirection(Direction.Up);
+
+				} else {
+					this.setDirection(Direction.Down);
+
+				}
+				// print the direction in which the elevator is moving
+				System.out.println("Elevator going " + this.getDirection() + " to floor: " + destinationFloor);
+
+				if (destinationFloor == carButton) {
+					this.getButtonLampStates()[carButton] = ButtonLampState.OFF;
+					System.out
+							.println("car button " + carButton + " lamp is " + this.getButtonLampStates()[destinationFloor]);
+				}
+				this.setCurrentFloor(destinationFloor);
+				this.setMotorOn(false);
+				this.setMoving(false);
+
+				System.out.println("Elevator reached floor: " + destinationFloor + ".  Opening doors");
+				this.setDoorState(DoorState.OPEN);
+
+				System.out.println("Closing doors");
+				this.setDoorState(DoorState.CLOSED);
+
+			} else {
+
+				System.out.println("Elevator is on floor " + this.getCurrentFloor() + ". Opening doors");
+				this.setDoorState(DoorState.OPEN);
+
+				System.out.println("Closing doors");
+				this.setDoorState(DoorState.CLOSED);
+			}
+		}
+		Message message = new Message("Processing FloorEvent : Done");
+		return message;
+	}
+	
 }
