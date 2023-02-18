@@ -16,6 +16,10 @@ public class Scheduler implements Runnable {
 
 	private BlockingQueue<Message> schedulerToFloorQueue;
 	private BlockingQueue<FloorEvent> schedulerToElevatorQueue;
+	
+	private SchedulerState state;
+	private FloorEvent event;
+	private Message message;
 
 	public Scheduler(BlockingQueue<Message> elevatorToSchedulerQueue, BlockingQueue<Message> schedulerToFloorQueue,
 			BlockingQueue<FloorEvent> floorToSchedulerQueue, BlockingQueue<FloorEvent> schedulerToElevatorQueue) {
@@ -24,57 +28,76 @@ public class Scheduler implements Runnable {
 		this.elevatorToSchedulerQueue = elevatorToSchedulerQueue;
 		this.schedulerToFloorQueue = schedulerToFloorQueue;
 		this.schedulerToElevatorQueue = schedulerToElevatorQueue;
+		this.state = new FloorListeningState(this);
+		
 	}
 
 
-	/**
-	 * read data sent by elevator -- could return data in form of data structure
-
-	public Object readDataFromElevator() {
-		// TODO
+	public void setState(SchedulerState state) {
+		this.state = state;
 	}
-	*/
 
 
 	/**
 	 * read data sent by floor and add to elevator queue
 	 */
-	public void readDataFromFloorToElevator() {
+	public void sendToElevator() {
 		try {
-			FloorEvent event = floorToSchedulerQueue.take();
-			Logger.println("Got from Floor. Sending to elevator...");
-
 			schedulerToElevatorQueue.put(event);
 		} catch (InterruptedException e) {
 			System.err.println(e);
 		}
 
 	}
-
+	
 	/**
-	 * sends data received from elevator to floor system
+	 * Listens to the floor-to-elevator queue for new floor events
 	 */
-	public void sendElevatorDataToFloorSystem() {
+	public void listenToFloor() {
 		try {
-			Message elevatorMessage = elevatorToSchedulerQueue.take();
-			Logger.println("Got from Elevator. Sending to floor...");
-
-			schedulerToFloorQueue.put(elevatorMessage);
+			event = floorToSchedulerQueue.take();
+			Logger.println("Got message from Floor. Sending to elevator...");
 		} catch (InterruptedException e) {
 			System.err.println(e);
 		}
 	}
 
+	/**
+	 * listens to the data response from elevator
+	 */
+	public void listenToElevator() {
+		try {
+			message = elevatorToSchedulerQueue.take();
+			Logger.println("Got message from Elevator. Sending to floor...");
+
+			
+		} catch (InterruptedException e) {
+			System.err.println(e);
+		}
+	}
+	
+	/**
+	 * sends data received from elevator to floor system
+	 */
+	public void sendToFloor() {
+		try {
+			schedulerToFloorQueue.put(message);
+		} catch (InterruptedException e) {
+			System.err.println(e);
+		}
+		
+	}
+
 	@Override
 	public void run() {
 		while (true) {
-			readDataFromFloorToElevator();
+			state.dealWithMessage();
 
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {}
 
-			sendElevatorDataToFloorSystem();
+			
 
 
 
