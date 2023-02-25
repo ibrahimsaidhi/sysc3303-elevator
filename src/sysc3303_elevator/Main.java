@@ -56,14 +56,14 @@ public class Main {
 		var f2 = new Floor(2, floorToSchedulerQueue, schedulerToFloorQueue, floors.getOrDefault(2, new ArrayList<>()));
 		var f3 = new Floor(3, floorToSchedulerQueue, schedulerToFloorQueue, floors.getOrDefault(3, new ArrayList<>()));
 		var s1 = new Scheduler(elevatorToSchedulerQueue, schedulerToFloorQueue, floorToSchedulerQueue, schedulerToElevatorQueue);
-		var e1 = new Elevator(schedulerToElevatorQueue, elevatorToSchedulerQueue);
+		var es1 = new ElevatorSubsystem(5,1,schedulerToElevatorQueue, elevatorToSchedulerQueue);
 
 		var threads = new Thread[] {
 			new Thread(f1, "floor_1"),
 			new Thread(f2, "floor_2"),
 			new Thread(f3, "floor_3"),
 			new Thread(s1, "scheduler_1"),
-			new Thread(e1, "elevator_1")
+			new Thread(es1, "elevatorSubsytem")
 		};
 
 		for (var thread : threads) {
