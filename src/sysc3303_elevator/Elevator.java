@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author Tao Lufula, 101164153
  */
-public class Elevator {
+public class Elevator implements Runnable {
 	private int currentFloor;
 	private boolean isMoving;
 	private boolean isMotorOn;
@@ -20,6 +20,8 @@ public class Elevator {
 	private Direction direction;
 	private ButtonLampState[] buttonLampStates;
 	private List<Integer> destinationFloors;
+	private ElevatorState state;
+	private List<ElevatorObserver> observers;
 
 	/**
 	 * Constructor for Elevator Class
@@ -36,6 +38,9 @@ public class Elevator {
 
 		this.buttonLampStates = new ButtonLampState[numberOfFloors];
 		Arrays.fill(buttonLampStates, ButtonLampState.OFF);
+		
+		this.state = new IdleState();
+		this.observers = new ArrayList<>();
 	}
 
 	public int getCurrentFloor() {
@@ -86,6 +91,28 @@ public class Elevator {
 		this.buttonLampStates = buttonLampStates;
 	}
 
+	public List<Integer> getDestinationFloors() {
+		return destinationFloors;
+	}
+
+	public void setState(ElevatorState state) {
+		this.state = state;
+	}
+	
+	public void addObserver(ElevatorObserver observer) {
+        observers.add(observer);
+    }
+
+    public void removeObserver(ElevatorObserver observer) {
+        observers.remove(observer);
+    }
+
+    public void notifyObservers(Message message) {
+        for (ElevatorObserver observer : observers) {
+            observer.onEventProcessed(message);
+        }
+    }
+
 	/**
 	 * method to process events from elevator subsystem and return a complete
 	 * message
@@ -95,72 +122,40 @@ public class Elevator {
 	 * 
 	 * @author Tao Lufula, 101164153
 	 */
-	public Message processFloorEvent(FloorEvent event) {
+	public void processFloorEvent(FloorEvent event) {
 
 		int carButton = event.carButton();
 		int floorButton = event.floor();
 
-		this.destinationFloors.add(floorButton);
-		this.destinationFloors.add(carButton);
+		if (carButton != 0 && floorButton != carButton) {
+			this.getDestinationFloors().add(floorButton);
+			this.getDestinationFloors().add(carButton);
 
-		for (int destinationFloor : destinationFloors) {
-
-			if (this.getCurrentFloor() != destinationFloor) {
-
-				// floor request or Car Button request
-				if (destinationFloor == floorButton) {
-					System.out.println("Elevator is on floor " + this.getCurrentFloor()
-							+ " and has been requested on floor " + floorButton);
-				} else {
-					this.getButtonLampStates()[carButton] = ButtonLampState.ON;
-					System.out.println("Elevator is on floor " + this.getCurrentFloor() + ". Car button " + carButton
-							+ " lamp is " + this.getButtonLampStates()[carButton]);
-				}
-
-				this.setDoorState(DoorState.CLOSED);
-				this.setMotorOn(true);
-				this.setMoving(true);
-
-				System.out
-						.println("Elevator doors are " + this.getDoorState() + ", motor is ON. Elevator is moving... ");
-
-				if (this.getCurrentFloor() < destinationFloor) {
-
-					this.setDirection(Direction.Up);
-
-				} else {
-					this.setDirection(Direction.Down);
-
-				}
-				// print the direction in which the elevator is moving
-				System.out.println("Elevator going " + this.getDirection() + " to floor: " + destinationFloor);
-
-				if (destinationFloor == carButton) {
-					this.getButtonLampStates()[carButton] = ButtonLampState.OFF;
-					System.out.println(
-							"car button " + carButton + " lamp is " + this.getButtonLampStates()[destinationFloor]);
-				}
-				this.setCurrentFloor(destinationFloor);
-				this.setMotorOn(false);
-				this.setMoving(false);
-
-				System.out.println("Elevator reached floor: " + destinationFloor + ". Motor is OFF. Elevator is not moving... Opening doors");
-				this.setDoorState(DoorState.OPEN);
-
-				System.out.println("Closing doors");
-				this.setDoorState(DoorState.CLOSED);
+			if (this.getCurrentFloor() != this.getDestinationFloors().get(0)) {
+				this.setState(new MovingState());
 
 			} else {
-
-				System.out.println("Elevator is on floor " + this.getCurrentFloor() + ". Opening doors");
+				this.getDestinationFloors().remove(0);
+				System.out.println("Opening doors");
 				this.setDoorState(DoorState.OPEN);
+				this.setState(new DoorOpenState());
+			}
 
-				System.out.println("Closing doors");
-				this.setDoorState(DoorState.CLOSED);
+		} else {
+			System.out.println("Invalid floor event");
+
+		}
+	}
+
+	public void run() {
+		while (true) {
+			state.advance(this);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
-		Message message = new Message("Processing FloorEvent : Done");
-		return message;
 	}
 
 }

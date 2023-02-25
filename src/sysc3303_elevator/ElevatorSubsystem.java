@@ -12,7 +12,7 @@ import java.util.concurrent.BlockingQueue;
  *
  * @author Tao Lufula, 101164153
  */
-public class ElevatorSubsystem implements Runnable {
+public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 
 	private BlockingQueue<FloorEvent> schedulerToElevatorSubsystemQueue;
 	private BlockingQueue<Message> elevatorSubsystemToSchedulerQueue;
@@ -35,7 +35,11 @@ public class ElevatorSubsystem implements Runnable {
 		// creating elevators given the number of floors. Note: only one elevator will
 		// be used for now
 		for (int i = 0; i < numberOfElevators; i++) {
-			this.elevators.add(new Elevator(elevatorFloors));
+			Elevator e1 = new Elevator(elevatorFloors);
+			this.elevators.add(e1);
+			e1.addObserver(this);
+			new Thread(e1, "Elevator 1").start();
+			
 		}
 	}
 
@@ -57,16 +61,22 @@ public class ElevatorSubsystem implements Runnable {
 				Logger.println("Got message from scheduler.");
 
 				// Pass the event to the elevator and wait for a message;
-				Message message = this.getElevator(0).processFloorEvent(event);
-
+				this.getElevator(0).processFloorEvent(event);				
 				Thread.sleep(1000);
-
-				Logger.println("Sending out message to Scheduler");
-				elevatorSubsystemToSchedulerQueue.put(message);
 
 			} catch (InterruptedException e) {
 				Logger.println("ElevatorSubsystem Thread interrupted");
 			}
+		}
+	}
+
+	@Override
+	public void onEventProcessed(Message message) {
+		Logger.println("Sending out message to Scheduler");
+		try {
+			elevatorSubsystemToSchedulerQueue.put(message);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 
