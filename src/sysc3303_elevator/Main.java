@@ -52,9 +52,7 @@ public class Main {
 		var schedulerToElevatorQueue = new LinkedBlockingQueue<FloorEvent>();
 		var elevatorToSchedulerQueue = new LinkedBlockingQueue<Message>();
 
-		var f1 = new Floor(floorToSchedulerQueue, schedulerToFloorQueue, floors.getOrDefault(new ArrayList<>(), events));
-		var f2 = new Floor(floorToSchedulerQueue, schedulerToFloorQueue, floors.getOrDefault(new ArrayList<>(), events));
-		var f3 = new Floor(floorToSchedulerQueue, schedulerToFloorQueue, floors.getOrDefault(new ArrayList<>(), events));
+		var f1 = new Floor(floorToSchedulerQueue, schedulerToFloorQueue, events);
 		var s1 = new Scheduler(elevatorToSchedulerQueue, schedulerToFloorQueue, floorToSchedulerQueue, schedulerToElevatorQueue);
 		var e1 = new Elevator(schedulerToElevatorQueue, elevatorToSchedulerQueue);
 
