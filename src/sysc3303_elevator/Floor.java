@@ -13,7 +13,6 @@ import java.util.concurrent.BlockingQueue;
 
 public class Floor implements Runnable {
 	
-	final int currentFloorNum;
 	private BlockingQueue<FloorEvent> floorToScheduler;
 	private BlockingQueue<Message> schedulerToFloor;
 	private ArrayList<FloorEvent> eventList;
@@ -26,8 +25,7 @@ public class Floor implements Runnable {
 	 * @param eventList List of events that that have to be validated and passed along 
 	 */
 	
-	public Floor(int currentFloorNum, BlockingQueue<FloorEvent> floorToSchedular, BlockingQueue<Message> schedulerToFloor, ArrayList<FloorEvent> eventList) {
-		this.currentFloorNum = currentFloorNum;
+	public Floor(BlockingQueue<FloorEvent> floorToSchedular, BlockingQueue<Message> schedulerToFloor, ArrayList<FloorEvent> eventList) {
 		this.floorToScheduler = floorToSchedular; 
 		this.schedulerToFloor = schedulerToFloor;
 		this.eventList = eventList; 
@@ -41,7 +39,7 @@ public class Floor implements Runnable {
 	 * @return boolean if valid or not
 	 */
 	
-	public boolean validateRequest(Direction direction, int newFloorNum) {
+	public boolean validateRequest(Direction direction, int newFloorNum, int currentFloorNum) {
 		return ((direction == Direction.Up) && (currentFloorNum < newFloorNum)) || ((direction == Direction.Down) && (currentFloorNum > newFloorNum));
 	}
 	/**
@@ -50,7 +48,7 @@ public class Floor implements Runnable {
 	 * @param floorevent
 	 */
 	public void floorToScheduler(FloorEvent floorevent) {
-		if(validateRequest(floorevent.direction(), floorevent.carButton())) {
+		if(validateRequest(floorevent.direction(), floorevent.carButton(), floorevent.floor())) {
 			try {
 				Logger.println(String.format("Sending '%s'", floorevent.toString()));
 				floorToScheduler.put(floorevent);

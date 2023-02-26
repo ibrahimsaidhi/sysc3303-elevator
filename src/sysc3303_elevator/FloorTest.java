@@ -32,10 +32,11 @@ public class FloorTest {
 		ArrayList<FloorEvent> eventList = new ArrayList<>();
 		FloorEvent floorevent = new FloorEvent(LocalTime.of(14, 5, 15, 0), 2, Direction.Up, 4);
 		eventList.add(floorevent);
-		Floor floor = new Floor(2, floorToScheduler ,schedulerToFloor , eventList);
+		Floor floor = new Floor(floorToScheduler ,schedulerToFloor , eventList);
 		Direction direction = eventList.get(0).direction();
 		int newFloor = eventList.get(0).carButton();
-		assertEquals(floor.validateRequest(direction, newFloor), true);
+		int currFloor = eventList.get(0).floor();
+		assertEquals(floor.validateRequest(direction, newFloor, currFloor), true);
 		
 	}
 	/**
@@ -50,10 +51,10 @@ public class FloorTest {
 		ArrayList<FloorEvent> eventList = new ArrayList<>();
 		FloorEvent floorevent = new FloorEvent(LocalTime.of(14, 5, 15, 0), 6, Direction.Up, 4);
 		eventList.add(floorevent);
-		Floor floor = new Floor(6, floorToScheduler ,schedulerToFloor , eventList);
+		Floor floor = new Floor(floorToScheduler ,schedulerToFloor , eventList);
 		Direction direction = eventList.get(0).direction();
 		int newFloor = eventList.get(0).carButton();
-		assertEquals(floor.validateRequest(direction, newFloor), false);
+		assertEquals(floor.validateRequest(direction, newFloor, newFloor), false);
 		
 	}
 	@Test
@@ -67,7 +68,7 @@ public class FloorTest {
 		BlockingQueue<Message> schedulerToFloor = new ArrayBlockingQueue<>(5);
 		ArrayList<FloorEvent> eventList = new ArrayList<>();
 		FloorEvent floorevent = new FloorEvent(LocalTime.of(14, 5, 15, 0), 2, Direction.Up, 4);
-		Floor floor = new Floor(2, floorToScheduler ,schedulerToFloor , eventList);
+		Floor floor = new Floor(floorToScheduler ,schedulerToFloor , eventList);
 		floor.floorToScheduler(floorevent);
 		assertEquals(floorToScheduler.isEmpty(), false);
 		}
@@ -83,7 +84,7 @@ public class FloorTest {
 		ArrayList<FloorEvent> eventList = new ArrayList<>();
 		FloorEvent floorevent = new FloorEvent(LocalTime.of(14, 5, 15, 0), 2, Direction.Up, 4);
 		FloorEvent floorevent2 = new FloorEvent(LocalTime.of(14, 5, 15, 0), 2, Direction.Down, 1);
-		Floor floor = new Floor(2, floorToScheduler ,schedulerToFloor , eventList);
+		Floor floor = new Floor(floorToScheduler ,schedulerToFloor , eventList);
 		floor.floorToScheduler(floorevent);
 		floor.floorToScheduler(floorevent2);
 		assertTrue(floorToScheduler.contains(floorevent));
