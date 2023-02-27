@@ -58,8 +58,6 @@ public class Main {
 
 		var threads = new Thread[] {
 			new Thread(f1, "floor_1"),
-			new Thread(f2, "floor_2"),
-			new Thread(f3, "floor_3"),
 			new Thread(s1, "scheduler_1"),
 			new Thread(es1, "elevatorSubsytem")
 		};
