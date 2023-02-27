@@ -14,7 +14,7 @@ public class MovingState implements ElevatorState {
 
 		// Start moving
 		elevator.setMoving(true);
-		System.out.println("Elevator doors are " + elevator.getDoorState() + ", motor is ON. Elevator is moving "
+		Logger.println("Elevator doors are " + elevator.getDoorState() + ", motor is ON. Elevator is moving "
 				+ elevator.getDirection());
 		while (elevator.getCurrentFloor() != destinationFloor) {
 			try {
@@ -24,9 +24,9 @@ public class MovingState implements ElevatorState {
 			}
 			int nextFloor = elevator.getCurrentFloor() + (elevator.getDirection() == Direction.Up ? 1 : -1);
 			elevator.setCurrentFloor(nextFloor);
-			System.out.println("Elevator is on floor " + nextFloor);
+			Logger.println("Elevator is on floor " + nextFloor);
 		}
-		System.out.println("Elevator reached destination floor: " + destinationFloor
+		Logger.println("Elevator reached destination floor: " + destinationFloor
 				+ ". Motor is OFF. Elevator is not moving... Opening doors");
 		elevator.getDestinationFloors().remove(0);
 		elevator.setMotorOn(false);
