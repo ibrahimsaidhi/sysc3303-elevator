@@ -13,7 +13,7 @@ public class DoorClosedState implements ElevatorState {
 		if (elevator.getCurrentFloor() != elevator.getDestinationFloors().get(0)) {
 			elevator.setState(new MovingState());
 		} else {
-			System.out.println("Opening doors");
+			Logger.println("Opening doors");
 			elevator.setDoorState(DoorState.OPEN);
 			elevator.getDestinationFloors().remove(0);
 			elevator.setState(new DoorOpenState());

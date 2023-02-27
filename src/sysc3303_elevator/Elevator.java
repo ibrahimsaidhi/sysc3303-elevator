@@ -136,13 +136,13 @@ public class Elevator implements Runnable {
 
 			} else {
 				this.getDestinationFloors().remove(0);
-				System.out.println("Opening doors");
+				Logger.println("Opening doors");
 				this.setDoorState(DoorState.OPEN);
 				this.setState(new DoorOpenState());
 			}
 
 		} else {
-			System.out.println("Invalid floor event");
+			Logger.println("Invalid floor event");
 
 		}
 	}
