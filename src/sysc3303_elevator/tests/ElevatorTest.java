@@ -1,10 +1,15 @@
-package sysc3303_elevator;
+package sysc3303_elevator.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import org.junit.jupiter.api.Test;
+
+import sysc3303_elevator.Direction;
+import sysc3303_elevator.ElevatorSubsystem;
+import sysc3303_elevator.FloorEvent;
+import sysc3303_elevator.Message;
 
 class ElevatorTest {
 	

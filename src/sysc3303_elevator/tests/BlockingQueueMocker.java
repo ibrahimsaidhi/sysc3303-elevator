@@ -1,4 +1,4 @@
-package sysc3303_elevator;
+package sysc3303_elevator.tests;
 
 import java.util.Collection;
 import java.util.Iterator;
