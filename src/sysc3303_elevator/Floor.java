@@ -3,6 +3,9 @@ package sysc3303_elevator;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 
+import sysc3303_elevator.networking.BlockingReceiver;
+import sysc3303_elevator.networking.BlockingSender;
+
 /**
  * 
  * Floor class is used to send valid floor events and send them to the schedular
@@ -13,8 +16,8 @@ import java.util.concurrent.BlockingQueue;
 
 public class Floor implements Runnable {
 	
-	private BlockingQueue<FloorEvent> floorToScheduler;
-	private BlockingQueue<Message> schedulerToFloor;
+	private BlockingSender<FloorEvent> floorToScheduler;
+	private BlockingReceiver<Message> schedulerToFloor;
 	private ArrayList<FloorEvent> eventList;
 	
 	/**
@@ -25,7 +28,7 @@ public class Floor implements Runnable {
 	 * @param eventList List of events that that have to be validated and passed along 
 	 */
 	
-	public Floor(BlockingQueue<FloorEvent> floorToSchedular, BlockingQueue<Message> schedulerToFloor, ArrayList<FloorEvent> eventList) {
+	public Floor(BlockingSender<FloorEvent> floorToSchedular, BlockingReceiver<Message> schedulerToFloor, ArrayList<FloorEvent> eventList) {
 		this.floorToScheduler = floorToSchedular; 
 		this.schedulerToFloor = schedulerToFloor;
 		this.eventList = eventList; 

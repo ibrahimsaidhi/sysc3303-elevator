@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
+import sysc3303_elevator.networking.BlockingReceiver;
+import sysc3303_elevator.networking.BlockingSender;
+
 /**
  * ElevatorSubsystem Class
  *
@@ -14,8 +17,8 @@ import java.util.concurrent.BlockingQueue;
  */
 public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 
-	private BlockingQueue<FloorEvent> schedulerToElevatorSubsystemQueue;
-	private BlockingQueue<Message> elevatorSubsystemToSchedulerQueue;
+	private BlockingReceiver<FloorEvent> schedulerToElevatorSubsystemQueue;
+	private BlockingSender<Message> elevatorSubsystemToSchedulerQueue;
 	private List<Elevator> elevators;
 	int elevatorFloors;
 
@@ -23,9 +26,12 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	 * Constructor for Elevator Class
 	 *
 	 */
-	public ElevatorSubsystem(int numberOfFloors, int numberOfElevators,
-			BlockingQueue<FloorEvent> schedulerToElevatorSubsystem,
-			BlockingQueue<Message> elevatorSubsystemToScheduler) {
+	public ElevatorSubsystem(
+			int numberOfFloors,
+			int numberOfElevators,
+			BlockingReceiver<FloorEvent> schedulerToElevatorSubsystem,
+			BlockingSender<Message> elevatorSubsystemToScheduler
+	) {
 
 		this.schedulerToElevatorSubsystemQueue = schedulerToElevatorSubsystem;
 		this.elevatorSubsystemToSchedulerQueue = elevatorSubsystemToScheduler;

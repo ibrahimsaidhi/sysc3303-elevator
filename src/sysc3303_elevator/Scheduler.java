@@ -5,24 +5,31 @@ package sysc3303_elevator;
 
 import java.util.concurrent.BlockingQueue;
 
+import sysc3303_elevator.networking.BlockingReceiver;
+import sysc3303_elevator.networking.BlockingSender;
+
 /**
  * @author Ibrahim Said
  *
  */
 public class Scheduler implements Runnable {
 
-	private BlockingQueue<FloorEvent> floorToSchedulerQueue;
-	private BlockingQueue<Message> elevatorToSchedulerQueue;
+	private BlockingReceiver<FloorEvent> floorToSchedulerQueue;
+	private BlockingReceiver<Message> elevatorToSchedulerQueue;
 
-	private BlockingQueue<Message> schedulerToFloorQueue;
-	private BlockingQueue<FloorEvent> schedulerToElevatorQueue;
+	private BlockingSender<Message> schedulerToFloorQueue;
+	private BlockingSender<FloorEvent> schedulerToElevatorQueue;
 	
 	private SchedulerState state;
 	private FloorEvent event;
 	private Message message;
 
-	public Scheduler(BlockingQueue<Message> elevatorToSchedulerQueue, BlockingQueue<Message> schedulerToFloorQueue,
-			BlockingQueue<FloorEvent> floorToSchedulerQueue, BlockingQueue<FloorEvent> schedulerToElevatorQueue) {
+	public Scheduler(
+			BlockingReceiver<Message> elevatorToSchedulerQueue,
+			BlockingSender<Message> schedulerToFloorQueue,
+			BlockingReceiver<FloorEvent> floorToSchedulerQueue,
+			BlockingSender<FloorEvent> schedulerToElevatorQueue
+	) {
 
 		this.floorToSchedulerQueue = floorToSchedulerQueue;
 		this.elevatorToSchedulerQueue = elevatorToSchedulerQueue;

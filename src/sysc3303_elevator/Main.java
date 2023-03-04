@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import sysc3303_elevator.networking.BlockingChannelBuilder;
+
 /**
  * @author Quinn Parrott
  *
@@ -47,14 +49,14 @@ public class Main {
 	public static void Run(ArrayList<FloorEvent> events) {
 		var floors = GroupBy(events, event -> event.floor());
 
-		var floorToSchedulerQueue = new LinkedBlockingQueue<FloorEvent>();
-		var schedulerToFloorQueue = new LinkedBlockingQueue<Message>();
-		var schedulerToElevatorQueue = new LinkedBlockingQueue<FloorEvent>();
-		var elevatorToSchedulerQueue = new LinkedBlockingQueue<Message>();
+		var floorToSchedulerQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<FloorEvent>());
+		var schedulerToFloorQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<Message>());
+		var schedulerToElevatorQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<FloorEvent>());
+		var elevatorToSchedulerQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<Message>());
 
-		var f1 = new Floor(floorToSchedulerQueue, schedulerToFloorQueue, events);
-		var s1 = new Scheduler(elevatorToSchedulerQueue, schedulerToFloorQueue, floorToSchedulerQueue, schedulerToElevatorQueue);
-		var es1 = new ElevatorSubsystem(5,1,schedulerToElevatorQueue, elevatorToSchedulerQueue);
+		var f1 = new Floor(floorToSchedulerQueue.first(), schedulerToFloorQueue.second(), events);
+		var s1 = new Scheduler(elevatorToSchedulerQueue.second(), schedulerToFloorQueue.first(), floorToSchedulerQueue.second(), schedulerToElevatorQueue.first());
+		var es1 = new ElevatorSubsystem(5, 1, schedulerToElevatorQueue.second(), elevatorToSchedulerQueue.first());
 
 		var threads = new Thread[] {
 			new Thread(f1, "floor_1"),

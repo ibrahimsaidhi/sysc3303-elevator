@@ -10,6 +10,8 @@ import sysc3303_elevator.Direction;
 import sysc3303_elevator.ElevatorSubsystem;
 import sysc3303_elevator.FloorEvent;
 import sysc3303_elevator.Message;
+import sysc3303_elevator.networking.BlockingReceiver;
+import sysc3303_elevator.networking.BlockingSender;
 
 class ElevatorTest {
 	
@@ -22,7 +24,7 @@ class ElevatorTest {
 		
 		var exception = new RuntimeException();
 
-		var inbound = new BlockingQueueMocker<FloorEvent>() {
+		var inbound = new BlockingReceiver<FloorEvent>() {
 			public int takeCount = 0;
 			public FloorEvent take() throws InterruptedException {
 				takeCount++;
@@ -40,7 +42,7 @@ class ElevatorTest {
 			};
 		};
 
-		var outbound = new BlockingQueueMocker<Message>() {
+		var outbound = new BlockingSender<Message>() {
 			public int count = 0;
 			@Override
 			public void put(Message e) throws InterruptedException {
