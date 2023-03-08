@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import sysc3303_elevator.FloorEvent;
 import sysc3303_elevator.Message;
 import sysc3303_elevator.Scheduler;
+import sysc3303_elevator.networking.BlockingReceiver;
+import sysc3303_elevator.networking.BlockingSender;
 
 class SchedulerTest {
 
@@ -21,7 +23,7 @@ class SchedulerTest {
 
 		var exception = new RuntimeException();
 
-		var inbound = new BlockingQueueMocker<FloorEvent>() {
+		var inbound = new BlockingReceiver<FloorEvent>() {
 			public int takeCount = 0;
 			public FloorEvent take() throws InterruptedException {
 				takeCount++;
@@ -39,7 +41,7 @@ class SchedulerTest {
 			};
 		};
 
-		var outbound = new BlockingQueueMocker<FloorEvent>() {
+		var outbound = new BlockingSender<FloorEvent>() {
 			public int count = 0;
 			@Override
 			public void put(FloorEvent e) throws InterruptedException {
@@ -47,7 +49,7 @@ class SchedulerTest {
 			}
 		};
 
-		var inboundResponse = new BlockingQueueMocker<Message>() {
+		var inboundResponse = new BlockingReceiver<Message>() {
 			public int takeCount = 0;
 			public Message take() throws InterruptedException {
 				takeCount++;
@@ -65,7 +67,7 @@ class SchedulerTest {
 			};
 		};
 
-		var outboundResponse = new BlockingQueueMocker<Message>() {
+		var outboundResponse = new BlockingSender<Message>() {
 			public int count = 0;
 			@Override
 			public void put(Message e) throws InterruptedException {

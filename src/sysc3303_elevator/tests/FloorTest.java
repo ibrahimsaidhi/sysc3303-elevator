@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +14,9 @@ import sysc3303_elevator.Direction;
 import sysc3303_elevator.Floor;
 import sysc3303_elevator.FloorEvent;
 import sysc3303_elevator.Message;
+import sysc3303_elevator.networking.BlockingChannelBuilder;
+import sysc3303_elevator.networking.BlockingReceiver;
+import sysc3303_elevator.networking.BlockingSender;
 
 /**
  * FloorTest
@@ -32,8 +34,8 @@ public class FloorTest {
 	 */
 	@Test
 	void testValidation1() throws IOException {
-		BlockingQueue<FloorEvent> floorToScheduler = new ArrayBlockingQueue<>(5);
-		BlockingQueue<Message> schedulerToFloor = new ArrayBlockingQueue<>(5);
+		BlockingSender<FloorEvent> floorToScheduler = BlockingChannelBuilder.FromBlockingQueue(new ArrayBlockingQueue<FloorEvent>(5)).first();
+		BlockingReceiver<Message> schedulerToFloor = BlockingChannelBuilder.FromBlockingQueue(new ArrayBlockingQueue<Message>(5)).second();
 		ArrayList<FloorEvent> eventList = new ArrayList<>();
 		FloorEvent floorevent = new FloorEvent(LocalTime.of(14, 5, 15, 0), 2, Direction.Up, 4);
 		eventList.add(floorevent);
@@ -51,8 +53,8 @@ public class FloorTest {
 	 */
 	@Test
 	void testValidation2() throws IOException {
-		BlockingQueue<FloorEvent> floorToScheduler = new ArrayBlockingQueue<>(5);
-		BlockingQueue<Message> schedulerToFloor = new ArrayBlockingQueue<>(5);
+		BlockingSender<FloorEvent> floorToScheduler = BlockingChannelBuilder.FromBlockingQueue(new ArrayBlockingQueue<FloorEvent>(5)).first();
+		BlockingReceiver<Message> schedulerToFloor = BlockingChannelBuilder.FromBlockingQueue(new ArrayBlockingQueue<Message>(5)).second();
 		ArrayList<FloorEvent> eventList = new ArrayList<>();
 		FloorEvent floorevent = new FloorEvent(LocalTime.of(14, 5, 15, 0), 6, Direction.Up, 4);
 		eventList.add(floorevent);
@@ -69,13 +71,14 @@ public class FloorTest {
 	 * @throws IOException
 	 */
 	void testQueuePassing1() throws IOException {
-		BlockingQueue<FloorEvent> floorToScheduler = new ArrayBlockingQueue<>(5);
-		BlockingQueue<Message> schedulerToFloor = new ArrayBlockingQueue<>(5);
+		var floorToSchedulerQueue = new ArrayBlockingQueue<FloorEvent>(5);
+		BlockingSender<FloorEvent> floorToScheduler = BlockingChannelBuilder.FromBlockingQueue(floorToSchedulerQueue).first();
+		BlockingReceiver<Message> schedulerToFloor = BlockingChannelBuilder.FromBlockingQueue(new ArrayBlockingQueue<Message>(5)).second();
 		ArrayList<FloorEvent> eventList = new ArrayList<>();
 		FloorEvent floorevent = new FloorEvent(LocalTime.of(14, 5, 15, 0), 2, Direction.Up, 4);
 		Floor floor = new Floor(floorToScheduler ,schedulerToFloor , eventList);
 		floor.floorToScheduler(floorevent);
-		assertEquals(floorToScheduler.isEmpty(), false);
+		assertEquals(floorToSchedulerQueue.isEmpty(), false);
 		}
 	@Test
 	/**
@@ -84,14 +87,15 @@ public class FloorTest {
 	 * @throws IOException
 	 */
 	void testQueuePassing2() throws IOException {
-		BlockingQueue<FloorEvent> floorToScheduler = new ArrayBlockingQueue<>(5);
-		BlockingQueue<Message> schedulerToFloor = new ArrayBlockingQueue<>(5);
+		var floorToSchedulerQueue = new ArrayBlockingQueue<FloorEvent>(5);
+		BlockingSender<FloorEvent> floorToScheduler = BlockingChannelBuilder.FromBlockingQueue(floorToSchedulerQueue).first();
+		BlockingReceiver<Message> schedulerToFloor = BlockingChannelBuilder.FromBlockingQueue(new ArrayBlockingQueue<Message>(5)).second();
 		ArrayList<FloorEvent> eventList = new ArrayList<>();
 		FloorEvent floorevent = new FloorEvent(LocalTime.of(14, 5, 15, 0), 2, Direction.Up, 4);
 		FloorEvent floorevent2 = new FloorEvent(LocalTime.of(14, 5, 15, 0), 2, Direction.Down, 1);
 		Floor floor = new Floor(floorToScheduler ,schedulerToFloor , eventList);
 		floor.floorToScheduler(floorevent);
 		floor.floorToScheduler(floorevent2);
-		assertTrue(floorToScheduler.contains(floorevent));
+		assertTrue(floorToSchedulerQueue.contains(floorevent));
 		}
 }
