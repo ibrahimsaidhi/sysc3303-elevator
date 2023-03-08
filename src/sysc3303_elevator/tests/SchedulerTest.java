@@ -1,10 +1,14 @@
-package sysc3303_elevator;
+package sysc3303_elevator.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import org.junit.jupiter.api.Test;
+
+import sysc3303_elevator.FloorEvent;
+import sysc3303_elevator.Message;
+import sysc3303_elevator.Scheduler;
 
 class SchedulerTest {
 

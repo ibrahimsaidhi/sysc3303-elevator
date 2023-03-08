@@ -1,10 +1,12 @@
-package sysc3303_elevator;
+package sysc3303_elevator.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
+
+import sysc3303_elevator.Main;
 
 class MainTest {
 

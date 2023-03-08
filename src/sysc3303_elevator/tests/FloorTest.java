@@ -1,4 +1,4 @@
-package sysc3303_elevator;
+package sysc3303_elevator.tests;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,6 +10,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import org.junit.jupiter.api.Test;
+
+import sysc3303_elevator.Direction;
+import sysc3303_elevator.Floor;
+import sysc3303_elevator.FloorEvent;
+import sysc3303_elevator.Message;
 
 /**
  * FloorTest

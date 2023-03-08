@@ -1,4 +1,4 @@
-package sysc3303_elevator;
+package sysc3303_elevator.tests;
 
 import org.junit.platform.suite.api.SelectClasses;
 import org.junit.platform.suite.api.Suite;

@@ -1,4 +1,4 @@
-package sysc3303_elevator;
+package sysc3303_elevator.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.time.LocalTime;
 
 import org.junit.jupiter.api.Test;
+
+import sysc3303_elevator.Direction;
+import sysc3303_elevator.FloorEvent;
+import sysc3303_elevator.FloorFormatReader;
 
 /**
  * @author Quinn Parrott
