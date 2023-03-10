@@ -26,6 +26,8 @@ public class Floor implements Runnable {
 	 * @param floorToSchedular queue of floorEvents being sent from the Floor to the schedular
 	 * @param schedulerToFloor queue of messages being sent from the schedular to the Floor
 	 * @param eventList List of events that that have to be validated and passed along 
+	 * @param clientReceiver 
+	 * @param clientSender 
 	 */
 	
 	public Floor(BlockingSender<FloorEvent> floorToSchedular, BlockingReceiver<Message> schedulerToFloor, ArrayList<FloorEvent> eventList) {
