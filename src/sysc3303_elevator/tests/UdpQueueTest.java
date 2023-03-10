@@ -15,8 +15,8 @@ public class UdpQueueTest {
 	@Test
 	void testBasic() throws Throwable {
 		int port = 10101;
-		var client = new UdpClientQueue<String>(InetAddress.getLocalHost(), port);
-		var server = new UdpServerQueue<String>(port);
+		var client = new UdpClientQueue<String, String>(InetAddress.getLocalHost(), port);
+		var server = new UdpServerQueue<String, String>(port);
 		
 		var clientThread = new Thread(client);
 		var serverThread = new Thread(server);

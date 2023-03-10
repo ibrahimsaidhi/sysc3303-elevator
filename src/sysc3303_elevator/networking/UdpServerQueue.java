@@ -13,7 +13,7 @@ import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class UdpServerQueue<T> implements Runnable {
+public class UdpServerQueue<T, S> implements Runnable {
 	
 	public static record UdpDatagramMessage<T>(int port, InetAddress address, T content) implements Serializable {
 		public <E> UdpDatagramMessage<E> fromContent(E content) {
@@ -29,10 +29,10 @@ public class UdpServerQueue<T> implements Runnable {
 		this.queue = new LinkedBlockingQueue<>();
 	}
 	
-	public BlockingSender<UdpDatagramMessage<T>> getSender() {
-		return new BlockingSender<UdpDatagramMessage<T>>() {
+	public BlockingSender<UdpDatagramMessage<S>> getSender() {
+		return new BlockingSender<UdpDatagramMessage<S>>() {
 			@Override
-			public void put(UdpDatagramMessage<T> e) throws InterruptedException {
+			public void put(UdpDatagramMessage<S> e) throws InterruptedException {
 				var stream = new ByteArrayOutputStream();
 				try {
 					(new ObjectOutputStream(stream)).writeObject(e.content());
