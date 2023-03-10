@@ -9,8 +9,9 @@ import org.junit.platform.suite.api.Suite;
 	FloorFormatReaderTest.class,
 	FloorTest.class,
 	MainTest.class,
+	ManyBlockingReceiverTest.class,
 	SchedulerTest.class,
-	UdpQueueTest.class
+	UdpQueueTest.class,
 })
 public class AllTests {
 
