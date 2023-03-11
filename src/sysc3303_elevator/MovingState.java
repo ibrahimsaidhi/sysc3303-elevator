@@ -7,15 +7,16 @@ public class MovingState implements ElevatorState {
 
 		// Start moving
 		elevator.setMoving(true);
-		Logger.debugln("Elevator doors are " + elevator.getDoorState() + ", motor is ON. Elevator is moving "
-				+ elevator.getDirection());
+		Logger.debugln("Elevator doors are " + elevator.getDoorState() + ", motor is ON. Car button " + destinationFloor + " lamp is " + elevator.getButtonLampStates()[destinationFloor]
+				+ " Elevator is moving " + elevator.getDirection());
 		while (elevator.getCurrentFloor() != destinationFloor) {
 			Thread.sleep(1000);
 			int nextFloor = elevator.getCurrentFloor() + (elevator.getDirection() == Direction.Up ? 1 : -1);
 			elevator.setCurrentFloor(nextFloor);
 			Logger.println("Elevator is on floor " + nextFloor);
 		}
-		Logger.debugln("Elevator reached destination floor: " + destinationFloor
+		elevator.getButtonLampStates()[elevator.getDestinationFloors().get(0)] = ButtonLampState.OFF;
+		Logger.debugln("Elevator reached destination floor: " + destinationFloor + ". Car button lamp is " + elevator.getButtonLampStates()[destinationFloor]
 				+ ". Motor is OFF. Elevator is not moving... Opening doors");
 		elevator.getDestinationFloors().remove(0);
 		elevator.setMotorOn(false);
