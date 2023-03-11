@@ -65,7 +65,7 @@ public class Scheduler implements Runnable {
 						var elevatorInfo = status.first().get();
 						if (elevatorInfo.state().equals(ElevatorStatus.Idle)) {
 							// Found idle elevator. Send request!
-							Logger.println("Sending go to command to elevator" + elevatorInfo.toString());
+							Logger.println("Sending elevator goto" + elevatorInfo.toString());
 							status.second().put(this.requestQueue.remove(0));
 
 							// No longer know the status of the elevator
@@ -102,7 +102,7 @@ public class Scheduler implements Runnable {
 					try {
 						Pair<Integer, FloorEvent> event = floorReceiver.take();
 						FloorEvent e = event.second();
-						Logger.println("Got " + event.toString());
+						Logger.debugln("Got " + event.toString());
 						floors.get(event.first()).put(new Message("ack")); // TODO: Make this an actual message
 						synchronized (requestQueue) {
 							requestQueue.add(e);
@@ -124,7 +124,7 @@ public class Scheduler implements Runnable {
 			try {
 				Pair<Integer, ElevatorResponse> event = elevatorReceiver.take();
 				ElevatorResponse response = event.second();
-				Logger.println("Got " + event.toString());
+				Logger.debugln("Got " + event.toString());
 				var entry = this.elevators.get(event.first());
 				var entryUpdated = new Pair<>(Optional.of(response), entry.second());
 				this.elevators.put(event.first(), entryUpdated);
