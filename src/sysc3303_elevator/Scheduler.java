@@ -3,10 +3,14 @@
  */
 package sysc3303_elevator;
 
-import java.util.concurrent.BlockingQueue;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
+import sysc3303_elevator.networking.ManyBlockingReceiver;
 
 /**
  * @author Ibrahim Said
@@ -14,102 +18,128 @@ import sysc3303_elevator.networking.BlockingSender;
  */
 public class Scheduler implements Runnable {
 
-	private BlockingReceiver<FloorEvent> floorToSchedulerQueue;
-	private BlockingReceiver<Message> elevatorToSchedulerQueue;
+	private ManyBlockingReceiver<FloorEvent> floorReceiver;
+	private ManyBlockingReceiver<ElevatorResponse> elevatorReceiver;
 
-	private BlockingSender<Message> schedulerToFloorQueue;
-	private BlockingSender<FloorEvent> schedulerToElevatorQueue;
-	
-	private SchedulerState state;
-	private FloorEvent event;
-	private Message message;
+	private HashMap<Integer, Pair<Optional<ElevatorResponse>, BlockingSender<FloorEvent>>> elevators;
+	private HashMap<Integer, BlockingSender<Message>> floors;
+
+	private ArrayList<FloorEvent> requestQueue = new ArrayList<>();
 
 	public Scheduler(
-			BlockingReceiver<Message> elevatorToSchedulerQueue,
-			BlockingSender<Message> schedulerToFloorQueue,
-			BlockingReceiver<FloorEvent> floorToSchedulerQueue,
-			BlockingSender<FloorEvent> schedulerToElevatorQueue
+			List<Pair<BlockingSender<FloorEvent>, BlockingReceiver<ElevatorResponse>>> elevators,
+			List<Pair<BlockingSender<Message>, BlockingReceiver<FloorEvent>>> floors
 	) {
 
-		this.floorToSchedulerQueue = floorToSchedulerQueue;
-		this.elevatorToSchedulerQueue = elevatorToSchedulerQueue;
-		this.schedulerToFloorQueue = schedulerToFloorQueue;
-		this.schedulerToElevatorQueue = schedulerToElevatorQueue;
-		this.state = new FloorListeningState(this);
-		
-	}
-
-
-	public void setState(SchedulerState state) {
-		this.state = state;
-	}
-
-
-	/**
-	 * read data sent by floor and add to elevator queue
-	 */
-	public void sendToElevator() {
-		try {
-			schedulerToElevatorQueue.put(event);
-		} catch (InterruptedException e) {
-			System.err.println(e);
+		List<Pair <Integer, BlockingReceiver<FloorEvent>>> floorList = new ArrayList<>();
+		this.floors = new HashMap<>();
+		int floor_i = 0;
+		for (var f: floors) {
+			floorList.add(new Pair<>(0, f.second()));
+			this.floors.put(floor_i, f.first());
+			floor_i += 1;
 		}
+		this.floorReceiver = new ManyBlockingReceiver<FloorEvent>(floorList);
+
+		List<Pair<Integer, BlockingReceiver<ElevatorResponse>>> elevatorList = new ArrayList<>();
+		this.elevators = new HashMap<>();
+		int elevator_i = 0;
+		for (var elevator: elevators) {
+			elevatorList.add(new Pair<>(elevator_i, elevator.second()));
+			this.elevators.put(elevator_i, new Pair<>(Optional.empty(), elevator.first()));
+			elevator_i += 1;
+		}
+		this.elevatorReceiver = new ManyBlockingReceiver<ElevatorResponse>(elevatorList);
 
 	}
-	
-	/**
-	 * Listens to the floor-to-elevator queue for new floor events
-	 */
-	public void listenToFloor() {
-		try {
-			event = floorToSchedulerQueue.take();
-			Logger.println("Got message from Floor. Sending to elevator...");
-		} catch (InterruptedException e) {
-			System.err.println(e);
+
+
+	public void trySendElevatorGoto() throws InterruptedException {
+		// TODO: Narrow down the sync block
+		synchronized (this.requestQueue) {
+			while (this.requestQueue.size() > 0) {
+				boolean foundElement = false;
+				for (var entry : this.elevators.entrySet()) {
+					var status = entry.getValue();
+					if (status.first().isPresent()) {
+						var elevatorInfo = status.first().get();
+						if (elevatorInfo.state().equals(ElevatorStatus.Idle)) {
+							// Found idle elevator. Send request!
+							Logger.println("Sending go to command to elevator" + elevatorInfo.toString());
+							status.second().put(this.requestQueue.remove(0));
+
+							// No longer know the status of the elevator
+							this.elevators.put(entry.getKey(), new Pair<>(Optional.empty(), status.second()));
+
+							foundElement = true;
+							break;
+						}
+					}
+				}
+
+				if (foundElement) {
+					continue;
+				} else {
+					break;
+				}
+			}
 		}
 	}
 
-	/**
-	 * listens to the data response from elevator
-	 */
-	public void listenToElevator() {
-		try {
-			message = elevatorToSchedulerQueue.take();
-			Logger.println("Got message from Elevator. Sending to floor...");
 
-			
-		} catch (InterruptedException e) {
-			System.err.println(e);
-		}
-	}
-	
-	/**
-	 * sends data received from elevator to floor system
-	 */
-	public void sendToFloor() {
-		try {
-			schedulerToFloorQueue.put(message);
-		} catch (InterruptedException e) {
-			System.err.println(e);
-		}
-		
-	}
 
 	@Override
 	public void run() {
-		while (true) {
-			state.dealWithMessage();
+		Thread floorThread = new Thread(floorReceiver, "sche-floor");
 
+		Thread elevatorThread = new Thread(elevatorReceiver, "sche-elev");
+
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						Pair<Integer, FloorEvent> event = floorReceiver.take();
+						FloorEvent e = event.second();
+						Logger.println("Got " + event.toString());
+						floors.get(event.first()).put(new Message("ack")); // TODO: Make this an actual message
+						synchronized (requestQueue) {
+							requestQueue.add(e);
+						}
+						trySendElevatorGoto();
+					} catch (InterruptedException e) {
+						break;
+					}
+				}
+			}
+
+		}, "sche-frecv");
+		floorThread.start();
+		elevatorThread.start();
+		t.start();
+		Logger.println("Scheduler initialized");
+
+		while(true) {
 			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {}
+				Pair<Integer, ElevatorResponse> event = elevatorReceiver.take();
+				ElevatorResponse response = event.second();
+				Logger.println("Got " + event.toString());
+				var entry = this.elevators.get(event.first());
+				var entryUpdated = new Pair<>(Optional.of(response), entry.second());
+				this.elevators.put(event.first(), entryUpdated);
 
-			
-
-
-
+				trySendElevatorGoto();
+			} catch (InterruptedException e) {
+				break;
+			}
 		}
 
+		Logger.println("Scheduler interrupted");
+
+		floorThread.interrupt();
+		elevatorThread.interrupt();
+		t.interrupt();
 	}
 
 

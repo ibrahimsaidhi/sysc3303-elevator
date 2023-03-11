@@ -1,8 +1,5 @@
 package sysc3303_elevator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
 
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
@@ -18,8 +15,9 @@ import sysc3303_elevator.networking.BlockingSender;
 public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 
 	private BlockingReceiver<FloorEvent> schedulerToElevatorSubsystemQueue;
-	private BlockingSender<Message> elevatorSubsystemToSchedulerQueue;
-	private List<Elevator> elevators;
+	private BlockingSender<ElevatorResponse> elevatorSubsystemToSchedulerQueue;
+	private Elevator elevator;
+	private Thread elevatorThread;
 	int elevatorFloors;
 
 	/**
@@ -28,56 +26,43 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	 */
 	public ElevatorSubsystem(
 			int numberOfFloors,
-			int numberOfElevators,
+			int elevatorId,
 			BlockingReceiver<FloorEvent> schedulerToElevatorSubsystem,
-			BlockingSender<Message> elevatorSubsystemToScheduler
+			BlockingSender<ElevatorResponse> elevatorSubsystemToScheduler
 	) {
 
 		this.schedulerToElevatorSubsystemQueue = schedulerToElevatorSubsystem;
 		this.elevatorSubsystemToSchedulerQueue = elevatorSubsystemToScheduler;
-		this.elevatorFloors = numberOfFloors;
-		this.elevators = new ArrayList<>();
+		this.elevator = new Elevator(numberOfFloors);
+		this.elevator.addObserver(this);
 
-		// creating elevators given the number of floors. Note: only one elevator will
-		// be used for now
-		for (int i = 0; i < numberOfElevators; i++) {
-			Elevator e1 = new Elevator(elevatorFloors);
-			this.elevators.add(e1);
-			e1.addObserver(this);
-			new Thread(e1, "Elevator 1").start();
-			
-		}
+		this.elevatorThread = new Thread(this.elevator, "elevator " + elevatorId);
 	}
 
-	/**
-	 * Getter method to get elevator given index
-	 * 
-	 * @param index
-	 * @return Elevator
-	 */
-	public Elevator getElevator(int index) {
-		return elevators.get(index);
-	}
-
+	@Override
 	public void run() {
+		Logger.println("Elevator subsystem init");
+		this.elevatorThread.start();
 		while (true) {
 			try {
 
 				FloorEvent event = this.schedulerToElevatorSubsystemQueue.take();
-				Logger.println("Got message from scheduler.");
+				Logger.println(String.format("Receivece msg from elevator '%s'", event.toString()));
 
 				// Pass the event to the elevator and wait for a message;
-				this.getElevator(0).processFloorEvent(event);				
+				this.elevator.processFloorEvent(event);
 				Thread.sleep(1000);
 
 			} catch (InterruptedException e) {
 				Logger.println("ElevatorSubsystem Thread interrupted");
+				break;
 			}
 		}
+		this.elevatorThread.interrupt();
 	}
 
 	@Override
-	public void onEventProcessed(Message message) {
+	public void onEventProcessed(ElevatorResponse message) {
 		Logger.println("Sending out message to Scheduler");
 		try {
 			elevatorSubsystemToSchedulerQueue.put(message);

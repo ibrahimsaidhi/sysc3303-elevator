@@ -11,52 +11,31 @@ import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import sysc3303_elevator.networking.BlockingChannelBuilder;
+import sysc3303_elevator.networking.BlockingReceiver;
+import sysc3303_elevator.networking.BlockingSender;
 
 /**
  * @author Quinn Parrott
  *
  */
 public class Main {
-	
-	/**
-	 * Used by `GroupBy` to turn an item into a key.
-	 * 
-	 * @see GroupBy
-	 * @author Quinn Parrott
-	 */
-	public interface GrouperFunction<K, V> { K byKey(V t1); }
-	
-	/**
-	 * Group a collection if items into buckets
-	 * 
-	 * @param collection The list of items.
-	 * @param grouperFun The function that will choose which bucket an item goes into.
-	 * @author Quinn Parrott
-	 */
-	public static <K, V> HashMap<K, ArrayList<V>> GroupBy(Iterable<V> collection, GrouperFunction<K, V> grouperFun) {
-		var groups = new HashMap<K, ArrayList<V>>();
-
-		for (var item : collection) {
-			var key = grouperFun.byKey(item);
-			var groupItems = groups.getOrDefault(key, new ArrayList<>());
-			groupItems.add(item);
-			groups.putIfAbsent(key, groupItems);
-		}
-
-		return groups;
-	}
 
 	public static void Run(ArrayList<FloorEvent> events) {
-		var floors = GroupBy(events, event -> event.floor());
 
 		var floorToSchedulerQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<FloorEvent>());
 		var schedulerToFloorQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<Message>());
 		var schedulerToElevatorQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<FloorEvent>());
-		var elevatorToSchedulerQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<Message>());
+		var elevatorToSchedulerQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<ElevatorResponse>());
+
+		var es1 = new ElevatorSubsystem(5, 1, schedulerToElevatorQueue.second(), elevatorToSchedulerQueue.first());
+		var elevators = new ArrayList<Pair<BlockingSender<FloorEvent>, BlockingReceiver<ElevatorResponse>>>();
+		elevators.add(new Pair<>(schedulerToElevatorQueue.first(), elevatorToSchedulerQueue.second()));
 
 		var f1 = new Floor(floorToSchedulerQueue.first(), schedulerToFloorQueue.second(), events);
-		var s1 = new Scheduler(elevatorToSchedulerQueue.second(), schedulerToFloorQueue.first(), floorToSchedulerQueue.second(), schedulerToElevatorQueue.first());
-		var es1 = new ElevatorSubsystem(5, 1, schedulerToElevatorQueue.second(), elevatorToSchedulerQueue.first());
+		var floors = new ArrayList<Pair<BlockingSender<Message>, BlockingReceiver<FloorEvent>>>();
+		floors.add(new Pair<>(schedulerToFloorQueue.first(), floorToSchedulerQueue.second()));
+
+		var s1 = new Scheduler(elevators, floors);
 
 		var threads = new Thread[] {
 			new Thread(f1, "floor_1"),
