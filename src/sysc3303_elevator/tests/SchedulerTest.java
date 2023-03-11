@@ -98,7 +98,7 @@ class SchedulerTest {
 
 
 		t1.start();
-		Thread.sleep(1000);
+		while (inbound.takeCount < 3) {Thread.sleep(100);}
 		t1.interrupt();
 		t1.join();
 

@@ -11,6 +11,7 @@ import java.util.Optional;
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
 import sysc3303_elevator.networking.ManyBlockingReceiver;
+import sysc3303_elevator.networking.TaggedMsg;
 
 /**
  * @author Ibrahim Said
@@ -100,10 +101,10 @@ public class Scheduler implements Runnable {
 			public void run() {
 				while(true) {
 					try {
-						Pair<Integer, FloorEvent> event = floorReceiver.take();
-						FloorEvent e = event.second();
+						TaggedMsg<Integer, FloorEvent> event = floorReceiver.take();
+						FloorEvent e = event.content();
 						Logger.debugln("Got " + event.toString());
-						floors.get(event.first()).put(new Message("ack")); // TODO: Make this an actual message
+						floors.get(event.id()).put(new Message("ack")); // TODO: Make this an actual message
 						synchronized (requestQueue) {
 							requestQueue.add(e);
 						}
@@ -122,12 +123,12 @@ public class Scheduler implements Runnable {
 
 		while(true) {
 			try {
-				Pair<Integer, ElevatorResponse> event = elevatorReceiver.take();
-				ElevatorResponse response = event.second();
+				TaggedMsg<Integer, ElevatorResponse> event = elevatorReceiver.take();
+				ElevatorResponse response = event.content();
 				Logger.debugln("Got " + event.toString());
-				var entry = this.elevators.get(event.first());
+				var entry = this.elevators.get(event.id());
 				var entryUpdated = new Pair<>(Optional.of(response), entry.second());
-				this.elevators.put(event.first(), entryUpdated);
+				this.elevators.put(event.id(), entryUpdated);
 
 				trySendElevatorGoto();
 			} catch (InterruptedException e) {

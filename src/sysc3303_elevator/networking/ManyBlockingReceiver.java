@@ -7,9 +7,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import sysc3303_elevator.Pair;
 
-public class ManyBlockingReceiver<T> implements BlockingReceiver<Pair<Integer, T>>, Runnable {
+public class ManyBlockingReceiver<T> implements BlockingReceiver<TaggedMsg<Integer, T>>, Runnable {
 
-	private BlockingQueue<Pair<Integer, T>> queue;
+	private BlockingQueue<TaggedMsg<Integer, T>> queue;
 	private List<Thread> receiverThreads;
 	private boolean isClose = false;
 
@@ -26,7 +26,7 @@ public class ManyBlockingReceiver<T> implements BlockingReceiver<Pair<Integer, T
 
 					while (true) {
 						try {
-							queue.put(new Pair<>(channelId, blockingReceiver.take()));
+							queue.put(new TaggedMsg<>(channelId, blockingReceiver.take()));
 							internalNotify();
 						} catch (InterruptedException e) {
 							break;
@@ -44,7 +44,7 @@ public class ManyBlockingReceiver<T> implements BlockingReceiver<Pair<Integer, T
 
 
 	@Override
-	public synchronized Pair<Integer, T> take() throws InterruptedException {
+	public synchronized TaggedMsg<Integer, T> take() throws InterruptedException {
 		while (this.queue.isEmpty()) {
 			if (this.isClose) {
 				throw new InterruptedException();
