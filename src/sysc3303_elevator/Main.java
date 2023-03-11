@@ -56,23 +56,22 @@ public class Main {
 		
 		int port = 10101;
 		var client = new UdpClientQueue<Message, FloorEvent>(InetAddress.getLocalHost(), port);
-		//var server = new UdpServerQueue<Message, FloorEvent>(port);
+		var server = new UdpServerQueue<Message, FloorEvent>(port);
 		
 		var clientThread = new Thread(client);
-		//var serverThread = new Thread(server);
-		//serverThread.start();
+		var serverThread = new Thread(server);
+		serverThread.start();
 		clientThread.start();
 		
-		var clientReceiver = client.getReceiver();
-		//var serverReceiver = server.getReceiver();
-		var clientSender = client.getSender();
-		//var serverSender = server.getSender();
+		var floorToSchedulerQueue = client.getSender();
+		var schedulerToFloorQueue = client.getReceiver();
 		
-		var floorToSchedulerQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<FloorEvent>());
-		var schedulerToFloorQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<Message>());
+		
+		//var floorToSchedulerQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<FloorEvent>());
+		//var schedulerToFloorQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<Message>());
 		//var schedulerToElevatorQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<FloorEvent>());
 		//var elevatorToSchedulerQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<Message>());
-		var f1 = new Floor(clientSender, clientReceiver, events);
+		var f1 = new Floor(floorToSchedulerQueue, schedulerToFloorQueue, events);
 		
 		//var s1 = new Scheduler(elevatorToSchedulerQueue.second(), schedulerToFloorQueue.first(), floorToSchedulerQueue.second(), schedulerToElevatorQueue.first());
 		//var es1 = new ElevatorSubsystem(5, 1, schedulerToElevatorQueue.second(), elevatorToSchedulerQueue.first());
