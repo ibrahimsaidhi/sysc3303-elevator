@@ -2,7 +2,7 @@ package sysc3303_elevator;
 
 public class MovingState implements ElevatorState {
 	@Override
-	public void advance(Elevator elevator) {
+	public void advance(Elevator elevator) throws InterruptedException {
 		int currentFloor = elevator.getCurrentFloor();
 		int destinationFloor = elevator.getDestinationFloors().get(0);
 
@@ -17,11 +17,7 @@ public class MovingState implements ElevatorState {
 		Logger.debugln("Elevator doors are " + elevator.getDoorState() + ", motor is ON. Elevator is moving "
 				+ elevator.getDirection());
 		while (elevator.getCurrentFloor() != destinationFloor) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				return;
-			}
+			Thread.sleep(1000);
 			int nextFloor = elevator.getCurrentFloor() + (elevator.getDirection() == Direction.Up ? 1 : -1);
 			elevator.setCurrentFloor(nextFloor);
 			Logger.println("Elevator is on floor " + nextFloor);

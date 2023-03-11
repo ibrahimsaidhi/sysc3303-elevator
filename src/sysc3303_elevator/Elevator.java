@@ -151,10 +151,10 @@ public class Elevator implements Runnable {
 
 	public void run() {
 		while (true) {
-			synchronized (this.destinationFloors) {
-				state.advance(this);
-			}
 			try {
+				synchronized (this.destinationFloors) {
+					state.advance(this);
+				}
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				break;
