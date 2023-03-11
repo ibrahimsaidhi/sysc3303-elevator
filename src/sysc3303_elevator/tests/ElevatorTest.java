@@ -19,54 +19,54 @@ import sysc3303_elevator.networking.BlockingSender;
 class ElevatorTest {
 
 
-//	@Test
-//	void test() throws Throwable {
-//
-//		var event1 = new FloorEvent(null, 2, Direction.Down, 1);
-//		var event2 = new FloorEvent(null, 3, Direction.Up, 4);
-//
-//		var inbound = new BlockingReceiver<FloorEvent>() {
-//			public int takeCount = 0;
-//			public FloorEvent take() throws InterruptedException {
-//				takeCount++;
-//				switch (takeCount - 1) {
-//				case 0: {
-//					return event1;
-//				}
-//				case 1: {
-//					return event2;
-//				}
-//				default:
-//					throw new InterruptedException();
-//				}
-//
-//			};
-//		};
-//
-//		var outbound = new BlockingSender<ElevatorResponse>() {
-//			public int count = 0;
-//			@Override
-//			public void put(ElevatorResponse e) throws InterruptedException {
-//				count++;
-//			}
-//		};
-//
-//		var e1 = new ElevatorSubsystem(
-//				2,
-//				1,
-//				inbound,
-//				outbound
-//		);
-//
-//		var t1 = new Thread(e1, "Elev-Sub");
-//
-//
-//		t1.start();
-//		t1.join();
-//
-//		assertEquals(3, inbound.takeCount);
-//		assertEquals(1, outbound.count);
-//	}
+	@Test
+	void test() throws Throwable {
+
+		var event1 = new FloorEvent(null, 2, Direction.Down, 1);
+		var event2 = new FloorEvent(null, 3, Direction.Up, 4);
+
+		var inbound = new BlockingReceiver<FloorEvent>() {
+			public int takeCount = 0;
+			public FloorEvent take() throws InterruptedException {
+				takeCount++;
+				switch (takeCount - 1) {
+				case 0: {
+					return event1;
+				}
+				case 1: {
+					return event2;
+				}
+				default:
+					throw new InterruptedException();
+				}
+
+			};
+		};
+
+		var outbound = new BlockingSender<ElevatorResponse>() {
+			public int count = 0;
+			@Override
+			public void put(ElevatorResponse e) throws InterruptedException {
+				count++;
+			}
+		};
+
+		var e1 = new ElevatorSubsystem(
+				2,
+				1,
+				inbound,
+				outbound
+		);
+
+		var t1 = new Thread(e1, "Elev-Sub");
+
+
+		t1.start();
+		t1.join();
+
+		assertEquals(3, inbound.takeCount);
+		assertEquals(1, outbound.count);
+	}
 	
 	@Test
     public void testProcessFloorEvent() {
@@ -74,6 +74,7 @@ class ElevatorTest {
 		var event1 = new FloorEvent(null, 5, Direction.Down, 3);
 		
         Elevator elevator = new Elevator(10);
+        assertEquals(elevator.getCurrentFloor(), Integer.valueOf(1));
 
         elevator.processFloorEvent(event1);
 
@@ -99,7 +100,7 @@ class ElevatorTest {
         assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.OFF);
         assertEquals(elevator.getState().getClass(), DoorOpenState.class);
         assertEquals(elevator.getCurrentFloor(), Integer.valueOf(3));
-        assertEquals(elevator.getDestinationFloors(), null);
+        assertTrue(elevator.getDestinationFloors().isEmpty());
     }
 
 }
