@@ -7,6 +7,7 @@ import java.util.concurrent.BlockingQueue;
 
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
+import sysc3303_elevator.networking.UdpServerQueue.UdpDatagramMessage;
 
 /**
  * @author Ibrahim Said
@@ -14,10 +15,10 @@ import sysc3303_elevator.networking.BlockingSender;
  */
 public class Scheduler implements Runnable {
 
-	private BlockingReceiver<FloorEvent> floorToScheduler;
+	private BlockingReceiver<UdpDatagramMessage<FloorEvent>> floorToScheduler;
 	private BlockingReceiver<Message> elevatorToScheduler;
 
-	private BlockingSender<Message> schedulerToFloor;
+	private BlockingSender<UdpDatagramMessage<Message>> schedulerToFloor;
 	private BlockingSender<FloorEvent> schedulerToElevator;
 	
 	private SchedulerState state;
@@ -25,14 +26,14 @@ public class Scheduler implements Runnable {
 	private Message message;
 
 	public Scheduler(
-			BlockingReceiver<FloorEvent> floorToScheduler,
+			BlockingReceiver<UdpDatagramMessage<FloorEvent>> schedularFloorReceiver,
 			BlockingReceiver<Message> elevatorToScheduler,
-			BlockingSender<Message> schedulerToFloor,
+			BlockingSender<UdpDatagramMessage<Message>> schedularFloorSender,
 			BlockingSender<FloorEvent> schedulerToElevator
 	) {
-		this.floorToScheduler = floorToScheduler;
+		this.floorToScheduler = schedularFloorReceiver;
 		this.elevatorToScheduler = elevatorToScheduler;
-		this.schedulerToFloor = schedulerToFloor;
+		this.schedulerToFloor = schedularFloorSender;
 		this.schedulerToElevator = schedulerToElevator;
 		
 		this.state = new FloorListeningState(this);
@@ -62,7 +63,7 @@ public class Scheduler implements Runnable {
 	 */
 	public void listenToFloor() {
 		try {
-			event = floorToScheduler.take();
+			event = floorToScheduler.take().content();
 			Logger.println("Got message from Floor. Sending to elevator...");
 		} catch (InterruptedException e) {
 			System.err.println(e);

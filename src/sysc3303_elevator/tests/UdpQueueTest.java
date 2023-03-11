@@ -95,6 +95,7 @@ public class UdpQueueTest {
 		int port = 10103;
 		var client = new UdpClientQueue<String, String>(InetAddress.getLocalHost(), port);
 		var server = new UdpServerQueue<String, String>(port);
+		FloorEvent floorevent;
 		
 		var clientThread = new Thread(client);
 		var serverThread = new Thread(server);

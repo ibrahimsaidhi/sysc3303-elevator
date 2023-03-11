@@ -99,13 +99,13 @@ public class Main {
 		
 		var f1 = new Floor(floorToSchedulerSender, floorToSchedulerReceiver, events);
 	
-		//var s1 = new Scheduler(schedularFloorReceiver, schedularElevatorReceiver, schedularFloorSender, schedularElevatorSender);
-		//var es1 = new ElevatorSubsystem(5, 1, schedularToElevatorReceiver, ElevatorToSchedularSender);
+		var s1 = new Scheduler(schedularFloorReceiver, schedularElevatorReceiver, schedularFloorSender, schedularElevatorSender);
+		var es1 = new ElevatorSubsystem(5, 1, schedularToElevatorReceiver, ElevatorToSchedularSender);
 
 		var threads = new Thread[] {
 			new Thread(f1, "floor_1"),
 			new Thread(s1, "scheduler_1"),
-			//new Thread(es1, "elevatorSubsytem")
+			new Thread(es1, "elevatorSubsytem")
 		};
 
 		for (var thread : threads) {

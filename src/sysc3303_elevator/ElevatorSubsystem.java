@@ -6,6 +6,7 @@ import java.util.concurrent.BlockingQueue;
 
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
+import sysc3303_elevator.networking.UdpServerQueue.UdpDatagramMessage;
 
 /**
  * ElevatorSubsystem Class
@@ -17,8 +18,8 @@ import sysc3303_elevator.networking.BlockingSender;
  */
 public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 
-	private BlockingReceiver<FloorEvent> schedulerToElevatorSubsystemQueue;
-	private BlockingSender<Message> elevatorSubsystemToSchedulerQueue;
+	private BlockingReceiver<UdpDatagramMessage<FloorEvent>> schedulerToElevatorSubsystemQueue;
+	private BlockingSender<UdpDatagramMessage<Message>> elevatorSubsystemToSchedulerQueue;
 	private List<Elevator> elevators;
 	int elevatorFloors;
 
@@ -29,12 +30,12 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	public ElevatorSubsystem(
 			int numberOfFloors,
 			int numberOfElevators,
-			BlockingReceiver<FloorEvent> schedulerToElevatorSubsystem,
-			BlockingSender<Message> elevatorSubsystemToScheduler
+			BlockingReceiver<UdpDatagramMessage<FloorEvent>> schedularToElevatorReceiver,
+			BlockingSender<UdpDatagramMessage<Message>> elevatorToSchedularSender
 	) {
 
-		this.schedulerToElevatorSubsystemQueue = schedulerToElevatorSubsystem;
-		this.elevatorSubsystemToSchedulerQueue = elevatorSubsystemToScheduler;
+		this.schedulerToElevatorSubsystemQueue = schedularToElevatorReceiver;
+		this.elevatorSubsystemToSchedulerQueue = elevatorToSchedularSender;
 		this.elevatorFloors = numberOfFloors;
 		this.elevators = new ArrayList<>();
 
@@ -63,7 +64,7 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 		while (true) {
 			try {
 
-				FloorEvent event = this.schedulerToElevatorSubsystemQueue.take();
+				FloorEvent event = this.schedulerToElevatorSubsystemQueue.take().content();
 				Logger.println("Got message from scheduler.");
 
 				// Pass the event to the elevator and wait for a message;
