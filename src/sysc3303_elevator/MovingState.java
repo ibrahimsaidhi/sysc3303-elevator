@@ -3,14 +3,7 @@ package sysc3303_elevator;
 public class MovingState implements ElevatorState {
 	@Override
 	public void advance(Elevator elevator) throws InterruptedException {
-		int currentFloor = elevator.getCurrentFloor();
 		int destinationFloor = elevator.getDestinationFloors().get(0);
-
-		if (currentFloor < destinationFloor) {
-			elevator.setDirection(Direction.Up);
-		} else {
-			elevator.setDirection(Direction.Down);
-		}
 
 		// Start moving
 		elevator.setMoving(true);

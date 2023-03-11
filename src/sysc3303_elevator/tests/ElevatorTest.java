@@ -60,7 +60,7 @@ class ElevatorTest {
 		t1.join();
 
 		assertEquals(3, inbound.takeCount);
-		assertEquals(1, outbound.count);
+		assertEquals(3, outbound.count);
 	}
 
 }

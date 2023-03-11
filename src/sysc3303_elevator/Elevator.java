@@ -17,7 +17,6 @@ public class Elevator implements Runnable {
 	private boolean isMoving;
 	private boolean isMotorOn;
 	private DoorState doorState;
-	private Direction direction;
 	private ButtonLampState[] buttonLampStates;
 	private List<Integer> destinationFloors;
 	private ElevatorState state;
@@ -33,7 +32,6 @@ public class Elevator implements Runnable {
 		this.isMoving = false;
 		this.isMotorOn = false;
 		this.doorState = DoorState.CLOSED;
-		this.direction = null;
 		this.destinationFloors = new ArrayList<>();
 
 		this.buttonLampStates = new ButtonLampState[numberOfFloors];
@@ -77,11 +75,8 @@ public class Elevator implements Runnable {
 	}
 
 	public Direction getDirection() {
-		return direction;
-	}
-
-	public void setDirection(Direction direction) {
-		this.direction = direction;
+		var destFloor = this.getDestinationFloors().isEmpty() ? 0 : this.getDestinationFloors().get(0);
+		return (currentFloor < destFloor) ? Direction.Up : Direction.Down;
 	}
 
 	public ButtonLampState[] getButtonLampStates() {
