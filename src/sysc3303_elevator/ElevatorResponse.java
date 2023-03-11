@@ -1,2 +1,3 @@
+package sysc3303_elevator;
 
-public record ElevatorInfo(int currentFloor, ElevatorStatus state) {}
+public record ElevatorResponse(int currentFloor, ElevatorStatus state) {}

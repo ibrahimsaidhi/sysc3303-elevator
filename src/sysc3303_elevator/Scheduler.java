@@ -4,9 +4,9 @@
 package sysc3303_elevator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Optional;
 
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
@@ -28,7 +28,7 @@ public class Scheduler implements Runnable {
 
 	public Scheduler(
 			List<Pair<BlockingSender<FloorEvent>, BlockingReceiver<ElevatorResponse>>> elevators,
-			List<Pair<BlockingSender<Message>, BlockingReceiver<FloorEvent>>> floors,
+			List<Pair<BlockingSender<Message>, BlockingReceiver<FloorEvent>>> floors
 	) {
 
 		List<Pair <Integer, BlockingReceiver<FloorEvent>>> floorList = new ArrayList<>();
@@ -44,7 +44,7 @@ public class Scheduler implements Runnable {
 		int elevator_i = 0;
 		for (var elevator: elevators) {
 			elevatorList.add(new Pair<>(elevator_i, elevator.second()));
-			this.elevators.put(elevator_i, new Pair(Optional.empty(), elevator.first));
+			this.elevators.put(elevator_i, new Pair<>(Optional.empty(), elevator.first()));
 			elevator_i += 1;
 		}
 		this.elevatorReceiver = new ManyBlockingReceiver<ElevatorResponse>(elevatorList);
@@ -52,7 +52,7 @@ public class Scheduler implements Runnable {
 	}
 
 
-	public void trySendElevatorGoto() {
+	public void trySendElevatorGoto() throws InterruptedException {
 		// TODO: Narrow down the sync block
 		synchronized (this.requestQueue) {
 			while (this.requestQueue.size() > 0) {
@@ -61,7 +61,7 @@ public class Scheduler implements Runnable {
 					var status = entry.getValue();
 					if (status.first().isPresent()) {
 						var elevatorInfo = status.first().get();
-						if (elevatorInfo.status().equals(ElevatorStatus.Idle)) {
+						if (elevatorInfo.state().equals(ElevatorStatus.Idle)) {
 							// Found idle elevator. Send request!
 							status.second().put(this.requestQueue.remove(0));
 							foundElement = true;
