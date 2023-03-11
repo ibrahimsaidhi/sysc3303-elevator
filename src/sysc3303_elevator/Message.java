@@ -1,3 +1,5 @@
 package sysc3303_elevator;
 
-public record Message(String messageToSend) {}
+import java.io.Serializable;
+
+public record Message(String messageToSend) implements Serializable {}

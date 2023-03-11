@@ -54,27 +54,53 @@ public class Main {
 	public static void Run(ArrayList<FloorEvent> events) throws UnknownHostException, SocketException {
 		var floors = GroupBy(events, event -> event.floor());
 		
-		int port = 10101;
-		var client = new UdpClientQueue<Message, FloorEvent>(InetAddress.getLocalHost(), port);
-		var server = new UdpServerQueue<Message, FloorEvent>(port);
+		int port1 = 10101;
+		int port2 = 10102;
 		
-		var clientThread = new Thread(client);
-		var serverThread = new Thread(server);
-		serverThread.start();
-		clientThread.start();
+		var client1 = new UdpClientQueue<Message, FloorEvent>(InetAddress.getLocalHost(), port1);
+		var server1 = new UdpServerQueue<FloorEvent, Message>(port1);
 		
-		var floorToSchedulerQueue = client.getSender();
-		var schedulerToFloorQueue = client.getReceiver();
+		var client2 = new UdpClientQueue<Message, FloorEvent>(InetAddress.getLocalHost(), port2);
+		var server2 = new UdpServerQueue<Message, FloorEvent>(port2);
+		
+		var clientThread1 = new Thread(client1);
+		var serverThread1 = new Thread(server1);
+		serverThread1.start();
+		clientThread1.start();
+		
+		var clientThread2 = new Thread(client2);
+		var serverThread2 = new Thread(server2);
+		serverThread2.start();
+		clientThread2.start();
+		
+		//Floor UDP
+		var floorToSchedulerSender = client1.getSender();
+		var floorToSchedulerReceiver = client1.getReceiver();
+		
+		//Schedular UDP
+		var schedularFloorSender = server1.getSender();
+		var schedularFloorReceiver = server1.getReceiver();
+		
+		var schedularElevatorSender = client2.getSender();
+		var schedularElevatorReceiver = client2.getReceiver();
+		
+		
+		//ElevatorUDP
+		
+		var schedularToElevatorReceiver = server2.getReceiver();
+		var ElevatorToSchedularSender = server2.getSender();
+		
 		
 		
 		//var floorToSchedulerQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<FloorEvent>());
 		//var schedulerToFloorQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<Message>());
 		//var schedulerToElevatorQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<FloorEvent>());
 		//var elevatorToSchedulerQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<Message>());
-		var f1 = new Floor(floorToSchedulerQueue, schedulerToFloorQueue, events);
 		
-		//var s1 = new Scheduler(elevatorToSchedulerQueue.second(), schedulerToFloorQueue.first(), floorToSchedulerQueue.second(), schedulerToElevatorQueue.first());
-		//var es1 = new ElevatorSubsystem(5, 1, schedulerToElevatorQueue.second(), elevatorToSchedulerQueue.first());
+		var f1 = new Floor(floorToSchedulerSender, floorToSchedulerReceiver, events);
+	
+		//var s1 = new Scheduler(schedularFloorReceiver, schedularElevatorReceiver, schedularFloorSender, schedularElevatorSender);
+		//var es1 = new ElevatorSubsystem(5, 1, schedularToElevatorReceiver, ElevatorToSchedularSender);
 
 		var threads = new Thread[] {
 			new Thread(f1, "floor_1"),

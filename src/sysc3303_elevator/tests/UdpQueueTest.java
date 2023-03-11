@@ -50,7 +50,7 @@ public class UdpQueueTest {
 	
 	@Test 
 	void testFloorEvent() throws SocketException, UnknownHostException, InterruptedException {
-		int port = 10101;
+		int port = 10102;
 		var client = new UdpClientQueue<Message, FloorEvent>(InetAddress.getLocalHost(), port);
 		var server = new UdpServerQueue<Message, FloorEvent>(port);
 		
@@ -67,6 +67,47 @@ public class UdpQueueTest {
 		clientSender.put(floorevent);
 		var result1 = serverReceiver.take();
 		assertEquals(result1.content(), floorevent);	
+	}
+	
+	@Test 
+	void FloorToScheduler() throws SocketException, UnknownHostException, InterruptedException {
+		int port = 10103;
+		var client = new UdpClientQueue<Message, FloorEvent>(InetAddress.getLocalHost(), port);
+		var server = new UdpServerQueue<Message, FloorEvent>(port);
+		
+		var clientThread = new Thread(client);
+		var serverThread = new Thread(server);
+		serverThread.start();
+		clientThread.start();
+		
+		FloorEvent floorevent = new FloorEvent(LocalTime.of(14, 5, 15, 0), 2, Direction.Up, 4);
+		
+		var clientSender = client.getSender();
+		var serverReceiver = server.getReceiver();
+
+		clientSender.put(floorevent);
+		var result1 = serverReceiver.take();
+		assertEquals(result1.content(), floorevent);	
+	}
+	
+	@Test 
+	void serverTest() throws SocketException, UnknownHostException, InterruptedException {
+		int port = 10103;
+		var client = new UdpClientQueue<String, String>(InetAddress.getLocalHost(), port);
+		var server = new UdpServerQueue<String, String>(port);
+		
+		var clientThread = new Thread(client);
+		var serverThread = new Thread(server);
+		serverThread.start();
+		clientThread.start();
+		
+		
+		var clientSender = client.getSender();
+		var serverReceiver = server.getReceiver();
+
+		clientSender.put("test");
+		var result1 = serverReceiver.take();
+		assertEquals(result1.content(), "test");	
 	}
 
 }

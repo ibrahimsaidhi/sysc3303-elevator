@@ -14,27 +14,27 @@ import sysc3303_elevator.networking.BlockingSender;
  */
 public class Scheduler implements Runnable {
 
-	private BlockingReceiver<FloorEvent> floorToSchedulerQueue;
-	private BlockingReceiver<Message> elevatorToSchedulerQueue;
+	private BlockingReceiver<FloorEvent> floorToScheduler;
+	private BlockingReceiver<Message> elevatorToScheduler;
 
-	private BlockingSender<Message> schedulerToFloorQueue;
-	private BlockingSender<FloorEvent> schedulerToElevatorQueue;
+	private BlockingSender<Message> schedulerToFloor;
+	private BlockingSender<FloorEvent> schedulerToElevator;
 	
 	private SchedulerState state;
 	private FloorEvent event;
 	private Message message;
 
 	public Scheduler(
-			BlockingReceiver<Message> elevatorToSchedulerQueue,
-			BlockingSender<Message> schedulerToFloorQueue,
-			BlockingReceiver<FloorEvent> floorToSchedulerQueue,
-			BlockingSender<FloorEvent> schedulerToElevatorQueue
+			BlockingReceiver<FloorEvent> floorToScheduler,
+			BlockingReceiver<Message> elevatorToScheduler,
+			BlockingSender<Message> schedulerToFloor,
+			BlockingSender<FloorEvent> schedulerToElevator
 	) {
-
-		this.floorToSchedulerQueue = floorToSchedulerQueue;
-		this.elevatorToSchedulerQueue = elevatorToSchedulerQueue;
-		this.schedulerToFloorQueue = schedulerToFloorQueue;
-		this.schedulerToElevatorQueue = schedulerToElevatorQueue;
+		this.floorToScheduler = floorToScheduler;
+		this.elevatorToScheduler = elevatorToScheduler;
+		this.schedulerToFloor = schedulerToFloor;
+		this.schedulerToElevator = schedulerToElevator;
+		
 		this.state = new FloorListeningState(this);
 		
 	}
@@ -50,7 +50,7 @@ public class Scheduler implements Runnable {
 	 */
 	public void sendToElevator() {
 		try {
-			schedulerToElevatorQueue.put(event);
+			schedulerToElevator.put(event);
 		} catch (InterruptedException e) {
 			System.err.println(e);
 		}
@@ -62,7 +62,7 @@ public class Scheduler implements Runnable {
 	 */
 	public void listenToFloor() {
 		try {
-			event = floorToSchedulerQueue.take();
+			event = floorToScheduler.take();
 			Logger.println("Got message from Floor. Sending to elevator...");
 		} catch (InterruptedException e) {
 			System.err.println(e);
@@ -74,7 +74,7 @@ public class Scheduler implements Runnable {
 	 */
 	public void listenToElevator() {
 		try {
-			message = elevatorToSchedulerQueue.take();
+			message = elevatorToScheduler.take();
 			Logger.println("Got message from Elevator. Sending to floor...");
 
 			
@@ -88,7 +88,7 @@ public class Scheduler implements Runnable {
 	 */
 	public void sendToFloor() {
 		try {
-			schedulerToFloorQueue.put(message);
+			schedulerToFloor.put(message);
 		} catch (InterruptedException e) {
 			System.err.println(e);
 		}

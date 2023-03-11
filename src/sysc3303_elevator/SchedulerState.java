@@ -1,6 +1,8 @@
 package sysc3303_elevator;
 
-public abstract class SchedulerState {
+import java.io.Serializable;
+
+public abstract class SchedulerState implements Serializable{
 	protected Scheduler scheduler;
 	public SchedulerState(Scheduler scheduler) {
 		this.scheduler = scheduler;
