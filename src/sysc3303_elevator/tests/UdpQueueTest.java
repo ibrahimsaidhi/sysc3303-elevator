@@ -17,23 +17,23 @@ public class UdpQueueTest {
 		int port = 10101;
 		var client = new UdpClientQueue<String, String>(InetAddress.getLocalHost(), port);
 		var server = new UdpServerQueue<String, String>(port);
-		
+
 		var clientThread = new Thread(client);
 		var serverThread = new Thread(server);
 		serverThread.start();
 		clientThread.start();
-		
+
 		var clientReceiver = client.getReceiver();
 		var serverReceiver = server.getReceiver();
 		var clientSender = client.getSender();
 		var serverSender = server.getSender();
-		
+
 
 		clientSender.put("wow");
 		var result1 = serverReceiver.take();
 		assertEquals(result1.content(), "wow");
-		
-		serverSender.put(result1.fromContent("reply"));
+
+		serverSender.put(result1.replaceContent("reply"));
 		var result2 = clientReceiver.take();
 		assertEquals(result2, "reply");
 

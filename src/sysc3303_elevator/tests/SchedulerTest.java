@@ -24,8 +24,6 @@ class SchedulerTest {
 		var msg1 = new ElevatorResponse(1, ElevatorStatus.Idle);
 		var msg2 = new ElevatorResponse(4, ElevatorStatus.Idle);
 
-		var exception = new RuntimeException();
-
 		var inbound = new BlockingReceiver<FloorEvent>() {
 			public int takeCount = 0;
 
