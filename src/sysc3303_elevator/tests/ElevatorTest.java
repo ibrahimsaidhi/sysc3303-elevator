@@ -4,63 +4,102 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import sysc3303_elevator.ButtonLampState;
 import sysc3303_elevator.Direction;
+import sysc3303_elevator.DoorClosedState;
+import sysc3303_elevator.DoorOpenState;
+import sysc3303_elevator.Elevator;
 import sysc3303_elevator.ElevatorResponse;
 import sysc3303_elevator.ElevatorSubsystem;
 import sysc3303_elevator.FloorEvent;
+import sysc3303_elevator.MovingState;
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
 
 class ElevatorTest {
 
 
+//	@Test
+//	void test() throws Throwable {
+//
+//		var event1 = new FloorEvent(null, 2, Direction.Down, 1);
+//		var event2 = new FloorEvent(null, 3, Direction.Up, 4);
+//
+//		var inbound = new BlockingReceiver<FloorEvent>() {
+//			public int takeCount = 0;
+//			public FloorEvent take() throws InterruptedException {
+//				takeCount++;
+//				switch (takeCount - 1) {
+//				case 0: {
+//					return event1;
+//				}
+//				case 1: {
+//					return event2;
+//				}
+//				default:
+//					throw new InterruptedException();
+//				}
+//
+//			};
+//		};
+//
+//		var outbound = new BlockingSender<ElevatorResponse>() {
+//			public int count = 0;
+//			@Override
+//			public void put(ElevatorResponse e) throws InterruptedException {
+//				count++;
+//			}
+//		};
+//
+//		var e1 = new ElevatorSubsystem(
+//				2,
+//				1,
+//				inbound,
+//				outbound
+//		);
+//
+//		var t1 = new Thread(e1, "Elev-Sub");
+//
+//
+//		t1.start();
+//		t1.join();
+//
+//		assertEquals(3, inbound.takeCount);
+//		assertEquals(1, outbound.count);
+//	}
+	
 	@Test
-	void test() throws Throwable {
+    public void testProcessFloorEvent() {
+		
+		var event1 = new FloorEvent(null, 5, Direction.Down, 3);
+		
+        Elevator elevator = new Elevator(10);
 
-		var event1 = new FloorEvent(null, 2, Direction.Down, 1);
-		var event2 = new FloorEvent(null, 3, Direction.Up, 4);
+        elevator.processFloorEvent(event1);
 
-		var inbound = new BlockingReceiver<FloorEvent>() {
-			public int takeCount = 0;
-			public FloorEvent take() throws InterruptedException {
-				takeCount++;
-				switch (takeCount - 1) {
-				case 0: {
-					return event1;
-				}
-				case 1: {
-					return event2;
-				}
-				default:
-					throw new InterruptedException();
-				}
-
-			};
-		};
-
-		var outbound = new BlockingSender<ElevatorResponse>() {
-			public int count = 0;
-			@Override
-			public void put(ElevatorResponse e) throws InterruptedException {
-				count++;
-			}
-		};
-
-		var e1 = new ElevatorSubsystem(
-				2,
-				1,
-				inbound,
-				outbound
-		);
-
-		var t1 = new Thread(e1, "Elev-Sub");
-
-
-		t1.start();
-		t1.join();
-
-		assertEquals(3, inbound.takeCount);
-		assertEquals(1, outbound.count);
-	}
+        assertEquals(elevator.getDestinationFloors().get(0), Integer.valueOf(5));
+        assertEquals(elevator.getDestinationFloors().get(1), Integer.valueOf(3));
+        assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.ON);
+        assertEquals(elevator.getState().getClass(), MovingState.class);
+        
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getCurrentFloor(), Integer.valueOf(5));
+        assertEquals(elevator.getState().getClass(), DoorOpenState.class);
+        
+        
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.ON);
+        assertEquals(elevator.getState().getClass(), DoorClosedState.class);
+        
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getState().getClass(), MovingState.class);
+        
+        elevator.getState().advance(elevator);
+        
+        assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.OFF);
+        assertEquals(elevator.getState().getClass(), DoorOpenState.class);
+        assertEquals(elevator.getCurrentFloor(), Integer.valueOf(3));
+        assertEquals(elevator.getDestinationFloors(), null);
+    }
 
 }

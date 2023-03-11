@@ -99,6 +99,10 @@ public class Elevator implements Runnable {
 	public void setState(ElevatorState state) {
 		this.state = state;
 	}
+	
+	public ElevatorState getState() {
+		return this.state;
+	}
 
 	public void addObserver(ElevatorObserver observer) {
         observers.add(observer);
