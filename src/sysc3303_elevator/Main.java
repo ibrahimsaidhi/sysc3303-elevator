@@ -61,7 +61,7 @@ public class Main {
 		var server1 = new UdpServerQueue<FloorEvent, Message>(port1);
 		
 		var client2 = new UdpClientQueue<Message, FloorEvent>(InetAddress.getLocalHost(), port2);
-		var server2 = new UdpServerQueue<Message, FloorEvent>(port2);
+		var server2 = new UdpServerQueue<FloorEvent, Message>(port2);
 		
 		var clientThread1 = new Thread(client1);
 		var serverThread1 = new Thread(server1);
@@ -104,7 +104,7 @@ public class Main {
 
 		var threads = new Thread[] {
 			new Thread(f1, "floor_1"),
-			//new Thread(s1, "scheduler_1"),
+			new Thread(s1, "scheduler_1"),
 			//new Thread(es1, "elevatorSubsytem")
 		};
 
