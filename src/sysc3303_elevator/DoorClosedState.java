@@ -5,7 +5,7 @@ public class DoorClosedState implements ElevatorState {
 	public void advance(Elevator elevator) {
 		if (elevator.getDestinationFloors().isEmpty()) {
 			elevator.setState(new IdleState());
-			
+
 			Message message = new Message("Processing FloorEvent : Done");
 			elevator.notifyObservers(message);
 			return;
