@@ -1,6 +1,6 @@
 package sysc3303_elevator;
 
-public class DoorClosedState implements ElevatorState {
+public class DispatchState implements ElevatorState {
 	@Override
 	public void advance(Elevator elevator) {
 		if (elevator.getDestinationFloors().isEmpty()) {
@@ -10,6 +10,7 @@ public class DoorClosedState implements ElevatorState {
 			elevator.notifyObservers(response);
 			return;
 		}
+
 		if (elevator.getCurrentFloor() != elevator.getDestinationFloors().get(0)) {
 			elevator.setState(new MovingState());
 			var direction = elevator.getDirection();

@@ -6,6 +6,6 @@ public class DoorOpenState implements ElevatorState {
 		Logger.debugln("Closing doors");
 		elevator.setDoorState(DoorState.CLOSED);
 
-		elevator.setState(new DoorClosedState());
+		elevator.setState(new DispatchState());
 	}
 }
