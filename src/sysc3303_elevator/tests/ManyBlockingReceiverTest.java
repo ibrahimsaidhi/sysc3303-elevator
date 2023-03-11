@@ -12,6 +12,7 @@ import sysc3303_elevator.Pair;
 import sysc3303_elevator.networking.BlockingChannelBuilder;
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.ManyBlockingReceiver;
+import sysc3303_elevator.networking.TaggedMsg;
 
 public class ManyBlockingReceiverTest {
 
@@ -26,7 +27,7 @@ public class ManyBlockingReceiverTest {
 		receivers.add(new Pair<>(2, channel2.second()));
 		receivers.add(new Pair<>(3, channel3.second()));
 
-		var queue = new LinkedBlockingQueue<Pair<Integer, String>>();
+		var queue = new LinkedBlockingQueue<TaggedMsg<Integer, String>>();
 		ManyBlockingReceiver<String> messageReceiver = new ManyBlockingReceiver<>(receivers);
 
 		var receiverThread = new Thread(new Runnable() {
@@ -52,48 +53,48 @@ public class ManyBlockingReceiverTest {
 			channel1.first().put("first");
 			var expected = new Pair<>(1, "first");
 			var actual = queue.take();
-			assertEquals(expected.first(), actual.first());
-			assertEquals(expected.second(), actual.second());
+			assertEquals(expected.first(), actual.id());
+			assertEquals(expected.second(), actual.content());
 		}
 
 		{
 			channel2.first().put("second");
 			var expected = new Pair<>(2, "second");
 			var actual = queue.take();
-			assertEquals(expected.first(), actual.first());
-			assertEquals(expected.second(), actual.second());
+			assertEquals(expected.first(), actual.id());
+			assertEquals(expected.second(), actual.content());
 		}
 
 		{
 			channel3.first().put("third");
 			var expected = new Pair<>(3, "third");
 			var actual = queue.take();
-			assertEquals(expected.first(), actual.first());
-			assertEquals(expected.second(), actual.second());
+			assertEquals(expected.first(), actual.id());
+			assertEquals(expected.second(), actual.content());
 		}
 
 		{
 			channel2.first().put("fourth");
 			var expected = new Pair<>(2, "fourth");
 			var actual = queue.take();
-			assertEquals(expected.first(), actual.first());
-			assertEquals(expected.second(), actual.second());
+			assertEquals(expected.first(), actual.id());
+			assertEquals(expected.second(), actual.content());
 		}
 
 		{
 			channel1.first().put("fifth");
 			var expected = new Pair<>(1, "fifth");
 			var actual = queue.take();
-			assertEquals(expected.first(), actual.first());
-			assertEquals(expected.second(), actual.second());
+			assertEquals(expected.first(), actual.id());
+			assertEquals(expected.second(), actual.content());
 		}
 
 		{
 			channel1.first().put("fifth");
 			var expected = new Pair<>(1, "fifth");
 			var actual = queue.take();
-			assertEquals(expected.first(), actual.first());
-			assertEquals(expected.second(), actual.second());
+			assertEquals(expected.first(), actual.id());
+			assertEquals(expected.second(), actual.content());
 		}
 
 		// Cleanup

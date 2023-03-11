@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -13,41 +12,19 @@ import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class UdpServerQueue<T, S> implements Runnable {
-	
-	public static record UdpDatagramMessage<T>(int port, InetAddress address, T content) implements Serializable {
-		public <E> UdpDatagramMessage<E> fromContent(E content) {
-			return new UdpDatagramMessage<>(this.port, this.address, content);
-		}
+public class UdpServerQueue<S, R> extends BlockingMultiplexer<UdpServerQueue.UdpClientIdentifier, S, R>
+		implements Runnable {
+	public static record UdpClientIdentifier(int port, InetAddress address) {
 	}
-	
+
 	private DatagramSocket socket;
-	private BlockingQueue<UdpDatagramMessage<T>> queue;
+	private BlockingQueue<TaggedMsg<UdpClientIdentifier, R>> queue;
 
 	public UdpServerQueue(int port) throws SocketException {
 		this.socket = new DatagramSocket(port);
 		this.queue = new LinkedBlockingQueue<>();
 	}
-	
-	public BlockingSender<UdpDatagramMessage<S>> getSender() {
-		return new BlockingSender<UdpDatagramMessage<S>>() {
-			@Override
-			public void put(UdpDatagramMessage<S> e) throws InterruptedException {
-				var stream = new ByteArrayOutputStream();
-				try {
-					(new ObjectOutputStream(stream)).writeObject(e.content());
-					var data = stream.toByteArray();
-					socket.send(new DatagramPacket(data, data.length, e.address(), e.port()));
-				} catch (IOException ex) {
-					ex.printStackTrace();
-				}
-			}};
-	}
 
-	public BlockingReceiver<UdpDatagramMessage<T>> getReceiver() {
-		return new BlockingChannelBuilder.ReceiverWrapper<>(this.queue);
-	}
-	
 	public void run() {
 		while (true) {
 			byte data[] = new byte[10000];
@@ -56,11 +33,30 @@ public class UdpServerQueue<T, S> implements Runnable {
 				socket.receive(receivePacket);
 				var objectInput = new ObjectInputStream(new ByteArrayInputStream(receivePacket.getData()));
 				Object obj = objectInput.readObject();
-				this.queue.put(new UdpDatagramMessage<>(receivePacket.getPort(), receivePacket.getAddress(), (T) obj));
+				this.queue.put(new TaggedMsg<UdpClientIdentifier, R>(
+						new UdpClientIdentifier(receivePacket.getPort(), receivePacket.getAddress()), (R) obj));
 			} catch (IOException | ClassNotFoundException | InterruptedException e) {
 				e.printStackTrace();
 				break;
 			}
 		}
+	}
+
+	@Override
+	public void put(TaggedMsg<UdpClientIdentifier, S> e) throws InterruptedException {
+		var stream = new ByteArrayOutputStream();
+		try {
+			(new ObjectOutputStream(stream)).writeObject(e.content());
+			var data = stream.toByteArray();
+			var ident = e.id();
+			socket.send(new DatagramPacket(data, data.length, ident.address(), ident.port()));
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	@Override
+	public TaggedMsg<UdpClientIdentifier, R> take() throws InterruptedException {
+		return this.queue.take();
 	}
 }
