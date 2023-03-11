@@ -17,7 +17,6 @@ public class Elevator implements Runnable {
 	private boolean isMoving;
 	private boolean isMotorOn;
 	private DoorState doorState;
-	private Direction direction;
 	private ButtonLampState[] buttonLampStates;
 	private List<Integer> destinationFloors;
 	private ElevatorState state;
@@ -33,7 +32,6 @@ public class Elevator implements Runnable {
 		this.isMoving = false;
 		this.isMotorOn = false;
 		this.doorState = DoorState.CLOSED;
-		this.direction = null;
 		this.destinationFloors = new ArrayList<>();
 
 		this.buttonLampStates = new ButtonLampState[numberOfFloors];
@@ -77,11 +75,8 @@ public class Elevator implements Runnable {
 	}
 
 	public Direction getDirection() {
-		return direction;
-	}
-
-	public void setDirection(Direction direction) {
-		this.direction = direction;
+		var destFloor = this.getDestinationFloors().isEmpty() ? 0 : this.getDestinationFloors().get(0);
+		return (currentFloor < destFloor) ? Direction.Up : Direction.Down;
 	}
 
 	public ButtonLampState[] getButtonLampStates() {
@@ -100,24 +95,24 @@ public class Elevator implements Runnable {
 		Logger.println("State: " + state.getClass().getSimpleName());
 		this.state = state;
 	}
-	
+
 	public ElevatorState getState() {
 		return this.state;
 	}
 
 	public void addObserver(ElevatorObserver observer) {
-        observers.add(observer);
-    }
+		observers.add(observer);
+	}
 
-    public void removeObserver(ElevatorObserver observer) {
-        observers.remove(observer);
-    }
+	public void removeObserver(ElevatorObserver observer) {
+		observers.remove(observer);
+	}
 
-    public void notifyObservers(ElevatorResponse message) {
-        for (ElevatorObserver observer : observers) {
-            observer.onEventProcessed(message);
-        }
-    }
+	public void notifyObservers(ElevatorResponse message) {
+		for (ElevatorObserver observer : observers) {
+			observer.onEventProcessed(message);
+		}
+	}
 
 	/**
 	 * method to process events from elevator subsystem and return a complete
@@ -129,38 +124,40 @@ public class Elevator implements Runnable {
 	 * @author Tao Lufula, 101164153
 	 */
 	public void processFloorEvent(FloorEvent event) {
+		synchronized (this.destinationFloors) {
 
-		int carButton = event.carButton();
-		int floorButton = event.floor();
+			int carButton = event.carButton();
+			int floorButton = event.floor();
 
-		if (carButton != 0 && floorButton != carButton) {
-			this.getDestinationFloors().add(floorButton);
-			this.getDestinationFloors().add(carButton);
-			this.getButtonLampStates()[carButton] = ButtonLampState.ON;
+			if (carButton != 0 && floorButton != carButton) {
+				this.getDestinationFloors().add(floorButton);
+				this.getDestinationFloors().add(carButton);
+				this.getButtonLampStates()[carButton] = ButtonLampState.ON;
 
-			if (this.getCurrentFloor() != this.getDestinationFloors().get(0)) {
-				this.setState(new MovingState());
+				if (this.getCurrentFloor() != this.getDestinationFloors().get(0)) {
+					this.setState(new MovingState());
+				} else {
+					this.getDestinationFloors().remove(0);
+					Logger.debugln("Opening doors");
+					this.setDoorState(DoorState.OPEN);
+					this.setState(new DoorOpenState());
+				}
 
 			} else {
-				this.getDestinationFloors().remove(0);
-				Logger.debugln("Opening doors");
-				this.setDoorState(DoorState.OPEN);
-				this.setState(new DoorOpenState());
+				Logger.println("Invalid floor event");
 			}
-
-		} else {
-			Logger.println("Invalid floor event");
-
 		}
 	}
 
 	public void run() {
 		while (true) {
-			state.advance(this);
 			try {
+				synchronized (this.destinationFloors) {
+					state.advance(this);
+				}
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				break;
 			}
 		}
 	}

@@ -69,7 +69,7 @@ class ElevatorTest {
 	}
 	
 	@Test
-    public void testProcessFloorEvent() {
+    public void testProcessFloorEvent() throws InterruptedException {
 		
 		var event1 = new FloorEvent(null, 5, Direction.Down, 3);
 		

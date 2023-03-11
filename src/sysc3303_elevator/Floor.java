@@ -1,7 +1,6 @@
 package sysc3303_elevator;
 
 import java.util.ArrayList;
-import java.util.concurrent.BlockingQueue;
 
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
