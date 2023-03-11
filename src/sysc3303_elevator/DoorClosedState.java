@@ -16,7 +16,7 @@ public class DoorClosedState implements ElevatorState {
 			var response = new ElevatorResponse(elevator.getCurrentFloor(), direction.equals(Direction.Up) ? ElevatorStatus.Up : ElevatorStatus.Down);
 			elevator.notifyObservers(response);
 		} else {
-			Logger.println("Opening doors");
+			Logger.debugln("Opening doors");
 			elevator.setDoorState(DoorState.OPEN);
 			elevator.getDestinationFloors().remove(0);
 			elevator.setState(new DoorOpenState());

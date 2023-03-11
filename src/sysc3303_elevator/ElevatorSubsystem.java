@@ -41,13 +41,13 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 
 	@Override
 	public void run() {
-		Logger.println("Elevator subsystem init");
+		Logger.debugln("Elevator subsystem init");
 		this.elevatorThread.start();
 		while (true) {
 			try {
 
 				FloorEvent event = this.schedulerToElevatorSubsystemQueue.take();
-				Logger.println(String.format("Receivece msg from elevator '%s'", event.toString()));
+				Logger.debugln(String.format("Receivece msg from elevator '%s'", event.toString()));
 
 				// Pass the event to the elevator and wait for a message;
 				this.elevator.processFloorEvent(event);
@@ -63,7 +63,7 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 
 	@Override
 	public void onEventProcessed(ElevatorResponse message) {
-		Logger.println("Sending out message to Scheduler");
+		Logger.debugln("Sending out message to Scheduler");
 		try {
 			elevatorSubsystemToSchedulerQueue.put(message);
 		} catch (InterruptedException e) {

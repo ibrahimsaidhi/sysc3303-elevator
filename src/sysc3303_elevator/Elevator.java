@@ -72,6 +72,7 @@ public class Elevator implements Runnable {
 	}
 
 	public void setDoorState(DoorState doorState) {
+		Logger.println("Door state " + doorState.toString());
 		this.doorState = doorState;
 	}
 
@@ -136,7 +137,7 @@ public class Elevator implements Runnable {
 
 			} else {
 				this.getDestinationFloors().remove(0);
-				Logger.println("Opening doors");
+				Logger.debugln("Opening doors");
 				this.setDoorState(DoorState.OPEN);
 				this.setState(new DoorOpenState());
 			}
