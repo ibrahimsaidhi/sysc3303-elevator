@@ -100,6 +100,10 @@ public class Elevator implements Runnable {
 		Logger.println("State: " + state.getClass().getSimpleName());
 		this.state = state;
 	}
+	
+	public ElevatorState getState() {
+		return this.state;
+	}
 
 	public void addObserver(ElevatorObserver observer) {
         observers.add(observer);
@@ -132,6 +136,7 @@ public class Elevator implements Runnable {
 		if (carButton != 0 && floorButton != carButton) {
 			this.getDestinationFloors().add(floorButton);
 			this.getDestinationFloors().add(carButton);
+			this.getButtonLampStates()[carButton] = ButtonLampState.ON;
 
 			if (this.getCurrentFloor() != this.getDestinationFloors().get(0)) {
 				this.setState(new MovingState());

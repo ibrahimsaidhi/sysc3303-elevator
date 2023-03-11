@@ -4,10 +4,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import sysc3303_elevator.ButtonLampState;
 import sysc3303_elevator.Direction;
+import sysc3303_elevator.DoorClosedState;
+import sysc3303_elevator.DoorOpenState;
+import sysc3303_elevator.Elevator;
 import sysc3303_elevator.ElevatorResponse;
 import sysc3303_elevator.ElevatorSubsystem;
 import sysc3303_elevator.FloorEvent;
+import sysc3303_elevator.MovingState;
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
 
@@ -62,5 +67,40 @@ class ElevatorTest {
 		assertEquals(3, inbound.takeCount);
 		assertEquals(1, outbound.count);
 	}
+	
+	@Test
+    public void testProcessFloorEvent() {
+		
+		var event1 = new FloorEvent(null, 5, Direction.Down, 3);
+		
+        Elevator elevator = new Elevator(10);
+        assertEquals(elevator.getCurrentFloor(), Integer.valueOf(1));
+
+        elevator.processFloorEvent(event1);
+
+        assertEquals(elevator.getDestinationFloors().get(0), Integer.valueOf(5));
+        assertEquals(elevator.getDestinationFloors().get(1), Integer.valueOf(3));
+        assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.ON);
+        assertEquals(elevator.getState().getClass(), MovingState.class);
+        
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getCurrentFloor(), Integer.valueOf(5));
+        assertEquals(elevator.getState().getClass(), DoorOpenState.class);
+        
+        
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.ON);
+        assertEquals(elevator.getState().getClass(), DoorClosedState.class);
+        
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getState().getClass(), MovingState.class);
+        
+        elevator.getState().advance(elevator);
+        
+        assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.OFF);
+        assertEquals(elevator.getState().getClass(), DoorOpenState.class);
+        assertEquals(elevator.getCurrentFloor(), Integer.valueOf(3));
+        assertTrue(elevator.getDestinationFloors().isEmpty());
+    }
 
 }
