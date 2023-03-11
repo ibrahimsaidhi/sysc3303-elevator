@@ -1,8 +1,5 @@
 package sysc3303_elevator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
 
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
@@ -18,7 +15,7 @@ import sysc3303_elevator.networking.BlockingSender;
 public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 
 	private BlockingReceiver<FloorEvent> schedulerToElevatorSubsystemQueue;
-	private BlockingSender<Message> elevatorSubsystemToSchedulerQueue;
+	private BlockingSender<ElevatorResponse> elevatorSubsystemToSchedulerQueue;
 	private Elevator elevator;
 	private Thread elevatorThread;
 	int elevatorFloors;
@@ -31,7 +28,7 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 			int numberOfFloors,
 			int elevatorId,
 			BlockingReceiver<FloorEvent> schedulerToElevatorSubsystem,
-			BlockingSender<Message> elevatorSubsystemToScheduler
+			BlockingSender<ElevatorResponse> elevatorSubsystemToScheduler
 	) {
 
 		this.schedulerToElevatorSubsystemQueue = schedulerToElevatorSubsystem;
@@ -63,7 +60,7 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	}
 
 	@Override
-	public void onEventProcessed(Message message) {
+	public void onEventProcessed(ElevatorResponse message) {
 		// TODO: Message -> ElevatorResponse
 		Logger.println("Sending out message to Scheduler");
 		try {

@@ -38,7 +38,7 @@ public class Elevator implements Runnable {
 
 		this.buttonLampStates = new ButtonLampState[numberOfFloors];
 		Arrays.fill(buttonLampStates, ButtonLampState.OFF);
-		
+
 		this.state = new IdleState();
 		this.observers = new ArrayList<>();
 	}
@@ -98,7 +98,7 @@ public class Elevator implements Runnable {
 	public void setState(ElevatorState state) {
 		this.state = state;
 	}
-	
+
 	public void addObserver(ElevatorObserver observer) {
         observers.add(observer);
     }
@@ -107,7 +107,7 @@ public class Elevator implements Runnable {
         observers.remove(observer);
     }
 
-    public void notifyObservers(Message message) {
+    public void notifyObservers(ElevatorResponse message) {
         for (ElevatorObserver observer : observers) {
             observer.onEventProcessed(message);
         }
@@ -116,10 +116,10 @@ public class Elevator implements Runnable {
 	/**
 	 * method to process events from elevator subsystem and return a complete
 	 * message
-	 * 
+	 *
 	 * @param event
 	 * @return Message
-	 * 
+	 *
 	 * @author Tao Lufula, 101164153
 	 */
 	public void processFloorEvent(FloorEvent event) {
