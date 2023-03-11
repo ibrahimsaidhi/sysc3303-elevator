@@ -24,21 +24,19 @@ public class UdpQueueTest {
 		clientThread.start();
 
 		var clientReceiver = client.getReceiver();
-		var serverReceiver = server.getReceiver();
 		var clientSender = client.getSender();
-		var serverSender = server.getSender();
 
 
 		clientSender.put("wow");
-		var result1 = serverReceiver.take();
+		var result1 = server.take();
 		assertEquals(result1.content(), "wow");
 
-		serverSender.put(result1.replaceContent("reply"));
+		server.put(result1.replaceContent("reply"));
 		var result2 = clientReceiver.take();
 		assertEquals(result2, "reply");
 
 		clientSender.put("more");
-		var result3 = serverReceiver.take();
+		var result3 = server.take();
 		assertEquals(result3.content(), "more");
 	}
 
