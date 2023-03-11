@@ -14,18 +14,18 @@ import sysc3303_elevator.networking.BlockingMultiplexer;
  * @author Ibrahim Said
  *
  */
-public class Scheduler implements Runnable {
+public class Scheduler<I> implements Runnable {
 
-	private BlockingMultiplexer<Integer, FloorEvent, ElevatorResponse> elevatorMux;
-	private BlockingMultiplexer<Integer, Message, FloorEvent> floorMux;
+	private BlockingMultiplexer<I, FloorEvent, ElevatorResponse> elevatorMux;
+	private BlockingMultiplexer<I, Message, FloorEvent> floorMux;
 
-	private HashMap<Integer, Optional<ElevatorResponse>> elevatorStateCache;
+	private HashMap<I, Optional<ElevatorResponse>> elevatorStateCache;
 
 	private ArrayList<FloorEvent> requestQueue = new ArrayList<>();
 
 	public Scheduler(
-			BlockingMultiplexer<Integer, FloorEvent, ElevatorResponse> elevatorMux,
-			BlockingMultiplexer<Integer, Message, FloorEvent> floorMux
+			BlockingMultiplexer<I, FloorEvent, ElevatorResponse> elevatorMux,
+			BlockingMultiplexer<I, Message, FloorEvent> floorMux
 	) {
 		this.elevatorStateCache = new HashMap<>();
 		this.elevatorMux = elevatorMux;
@@ -47,7 +47,7 @@ public class Scheduler implements Runnable {
 							Logger.println("Sending elevator goto" + elevatorInfo.toString());
 
 							this.elevatorMux
-									.put(new TaggedMsg<Integer, FloorEvent>(channelId, this.requestQueue.remove(0)));
+									.put(new TaggedMsg<I, FloorEvent>(channelId, this.requestQueue.remove(0)));
 
 							// No longer know the status of the elevator
 							this.elevatorStateCache.remove(channelId);
@@ -75,7 +75,7 @@ public class Scheduler implements Runnable {
 			public void run() {
 				while (true) {
 					try {
-						TaggedMsg<Integer, FloorEvent> event = floorMux.take();
+						TaggedMsg<I, FloorEvent> event = floorMux.take();
 						FloorEvent e = event.content();
 						Logger.debugln("Got " + event.toString());
 						floorMux.put(event.replaceContent(new Message("ack"))); // TODO: Make this an actual message
@@ -95,7 +95,7 @@ public class Scheduler implements Runnable {
 
 		while (true) {
 			try {
-				TaggedMsg<Integer, ElevatorResponse> event = elevatorMux.take();
+				TaggedMsg<I, ElevatorResponse> event = elevatorMux.take();
 				ElevatorResponse response = event.content();
 				Logger.debugln("Got " + event.toString());
 				this.elevatorStateCache.put(event.id(), Optional.of(response));

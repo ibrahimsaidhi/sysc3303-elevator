@@ -83,7 +83,7 @@ class SchedulerTest {
 		var t1 = new Thread(e1);
 
 		t1.start();
-		while (elevatorMux.takeCount < 3) {
+		while (elevatorMux.takeCount < 3 || floorMux.takeCount < 3) {
 			Thread.sleep(100);
 		}
 		t1.interrupt();
