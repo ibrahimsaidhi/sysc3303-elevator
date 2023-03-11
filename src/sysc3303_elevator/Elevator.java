@@ -97,6 +97,7 @@ public class Elevator implements Runnable {
 	}
 
 	public void setState(ElevatorState state) {
+		Logger.println("State: " + state.getClass().getSimpleName());
 		this.state = state;
 	}
 
