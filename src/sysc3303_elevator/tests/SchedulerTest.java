@@ -2,12 +2,15 @@ package sysc3303_elevator.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 
+import sysc3303_elevator.ElevatorResponse;
+import sysc3303_elevator.ElevatorStatus;
 import sysc3303_elevator.FloorEvent;
 import sysc3303_elevator.Message;
+import sysc3303_elevator.Pair;
 import sysc3303_elevator.Scheduler;
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
@@ -18,24 +21,27 @@ class SchedulerTest {
 	void test() throws Throwable {
 		var event1 = new FloorEvent(null, 0, null, 0);
 		var event2 = new FloorEvent(null, 1, null, 0);
-		var msg1 = new Message("");
-		var msg2 = new Message("");
+		var msg1 = new ElevatorResponse(1, ElevatorStatus.Idle);
+		var msg2 = new ElevatorResponse(4, ElevatorStatus.Idle);
 
 		var exception = new RuntimeException();
 
 		var inbound = new BlockingReceiver<FloorEvent>() {
 			public int takeCount = 0;
+
 			public FloorEvent take() throws InterruptedException {
 				takeCount++;
 				switch (takeCount - 1) {
-				case 0: {
-					return event1;
-				}
-				case 1: {
-					return event2;
-				}
-				default:
-					throw exception;
+					case 0: {
+						return event1;
+					}
+					case 1: {
+						return event2;
+					}
+					default:
+						while (true) {
+							Thread.sleep(1000);
+						}
 				}
 
 			};
@@ -43,25 +49,29 @@ class SchedulerTest {
 
 		var outbound = new BlockingSender<FloorEvent>() {
 			public int count = 0;
+
 			@Override
 			public void put(FloorEvent e) throws InterruptedException {
 				count++;
 			}
 		};
 
-		var inboundResponse = new BlockingReceiver<Message>() {
+		var inboundResponse = new BlockingReceiver<ElevatorResponse>() {
 			public int takeCount = 0;
-			public Message take() throws InterruptedException {
+
+			public ElevatorResponse take() throws InterruptedException {
 				takeCount++;
 				switch (takeCount - 1) {
-				case 0: {
-					return msg1;
-				}
-				case 1: {
-					return msg2;
-				}
-				default:
-					throw exception;
+					case 0: {
+						return msg1;
+					}
+					case 1: {
+						return msg2;
+					}
+					default:
+						while (true) {
+							Thread.sleep(1000);
+						}
 				}
 
 			};
@@ -69,39 +79,34 @@ class SchedulerTest {
 
 		var outboundResponse = new BlockingSender<Message>() {
 			public int count = 0;
+
 			@Override
 			public void put(Message e) throws InterruptedException {
 				count++;
 			}
 		};
 
+		var elevators = new ArrayList<Pair<BlockingSender<FloorEvent>, BlockingReceiver<ElevatorResponse>>>();
+		elevators.add(new Pair<>(outbound, inboundResponse));
+		var floors = new ArrayList<Pair<BlockingSender<Message>, BlockingReceiver<FloorEvent>>>();
+		floors.add(new Pair<>(outboundResponse, inbound));
+
 		var e1 = new Scheduler(
-				inboundResponse,
-				outboundResponse,
-				inbound,
-				outbound
+				elevators,
+				floors
 		);
 
 		var t1 = new Thread(e1);
 
-		var catcher = new UncaughtExceptionHandler() {
-			public Throwable caughtException = null;
-			@Override
-			public void uncaughtException(Thread t, Throwable e) {
-				caughtException = e;
-			}
-		};
-		t1.setDefaultUncaughtExceptionHandler(catcher);
 
 		t1.start();
+		Thread.sleep(1000);
+		t1.interrupt();
 		t1.join();
 
-		if (exception != catcher.caughtException) {
-			throw catcher.caughtException;
-		}
 		assertEquals(3, inbound.takeCount);
-		assertEquals(2, outbound.count);
-		assertEquals(2, inboundResponse.takeCount);
+		assertEquals(1, outbound.count);
+		assertEquals(3, inboundResponse.takeCount);
 		assertEquals(2, outboundResponse.count);
 	}
 

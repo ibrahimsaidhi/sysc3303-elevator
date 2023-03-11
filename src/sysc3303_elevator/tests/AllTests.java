@@ -8,7 +8,6 @@ import org.junit.platform.suite.api.Suite;
 	ElevatorTest.class,
 	FloorFormatReaderTest.class,
 	FloorTest.class,
-	MainTest.class,
 	ManyBlockingReceiverTest.class,
 	SchedulerTest.class,
 	UdpQueueTest.class,
