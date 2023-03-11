@@ -5,14 +5,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import sysc3303_elevator.networking.BlockingChannelBuilder;
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
+import sysc3303_elevator.networking.RawMultiplexer;
 
 /**
  * @author Quinn Parrott
@@ -30,16 +29,20 @@ public class Main {
 		var es1 = new ElevatorSubsystem(5, 1, schedulerToElevatorQueue.second(), elevatorToSchedulerQueue.first());
 		var elevators = new ArrayList<Pair<BlockingSender<FloorEvent>, BlockingReceiver<ElevatorResponse>>>();
 		elevators.add(new Pair<>(schedulerToElevatorQueue.first(), elevatorToSchedulerQueue.second()));
+		var elevatorMux = new RawMultiplexer<>(elevators);
 
 		var f1 = new Floor(floorToSchedulerQueue.first(), schedulerToFloorQueue.second(), events);
 		var floors = new ArrayList<Pair<BlockingSender<Message>, BlockingReceiver<FloorEvent>>>();
 		floors.add(new Pair<>(schedulerToFloorQueue.first(), floorToSchedulerQueue.second()));
+		var floorMux = new RawMultiplexer<>(floors);
 
-		var s1 = new Scheduler(elevators, floors);
+		var s1 = new Scheduler(elevatorMux, floorMux);
 
 		var threads = new Thread[] {
 			new Thread(f1, "floor_1"),
 			new Thread(s1, "scheduler_1"),
+			new Thread(elevatorMux, "sch_elevator_mux"),
+			new Thread(floorMux, "sch_floor_mux"),
 			new Thread(es1, "elevatorSubsytem")
 		};
 
