@@ -14,10 +14,10 @@ import sysc3303_elevator.networking.BlockingMultiplexer;
  * @author Ibrahim Said
  *
  */
-public class Scheduler<I> implements Runnable {
+public class Scheduler<I, R> implements Runnable {
 
 	private BlockingMultiplexer<I, FloorEvent, ElevatorResponse> elevatorMux;
-	private BlockingMultiplexer<I, Message, FloorEvent> floorMux;
+	private BlockingMultiplexer<R, Message, FloorEvent> floorMux;
 
 	private HashMap<I, Optional<ElevatorResponse>> elevatorStateCache;
 
@@ -25,7 +25,7 @@ public class Scheduler<I> implements Runnable {
 
 	public Scheduler(
 			BlockingMultiplexer<I, FloorEvent, ElevatorResponse> elevatorMux,
-			BlockingMultiplexer<I, Message, FloorEvent> floorMux
+			BlockingMultiplexer<R, Message, FloorEvent> floorMux
 	) {
 		this.elevatorStateCache = new HashMap<>();
 		this.elevatorMux = elevatorMux;
@@ -75,7 +75,7 @@ public class Scheduler<I> implements Runnable {
 			public void run() {
 				while (true) {
 					try {
-						TaggedMsg<I, FloorEvent> event = floorMux.take();
+						TaggedMsg<R, FloorEvent> event = floorMux.take();
 						FloorEvent e = event.content();
 						Logger.debugln("Got " + event.toString());
 						floorMux.put(event.replaceContent(new Message("ack"))); // TODO: Make this an actual message

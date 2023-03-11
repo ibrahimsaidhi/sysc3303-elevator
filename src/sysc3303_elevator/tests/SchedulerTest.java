@@ -78,7 +78,7 @@ class SchedulerTest {
 
 		};
 
-		var e1 = new Scheduler(elevatorMux, floorMux);
+		var e1 = new Scheduler<>(elevatorMux, floorMux);
 
 		var t1 = new Thread(e1);
 

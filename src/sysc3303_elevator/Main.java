@@ -36,7 +36,7 @@ public class Main {
 		floors.add(new Pair<>(schedulerToFloorQueue.first(), floorToSchedulerQueue.second()));
 		var floorMux = new RawMultiplexer<>(floors);
 
-		var s1 = new Scheduler(elevatorMux, floorMux);
+		var s1 = new Scheduler<>(elevatorMux, floorMux);
 
 		var threads = new Thread[] {
 			new Thread(f1, "floor_1"),
