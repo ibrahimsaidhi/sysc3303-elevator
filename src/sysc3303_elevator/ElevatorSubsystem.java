@@ -39,13 +39,15 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 		this.elevatorThread = new Thread(this.elevator, "elevator " + elevatorId);
 	}
 
+	@Override
 	public void run() {
+		Logger.println("Elevator subsystem init");
 		this.elevatorThread.start();
 		while (true) {
 			try {
 
 				FloorEvent event = this.schedulerToElevatorSubsystemQueue.take();
-				Logger.println("Got message from scheduler.");
+				Logger.println(String.format("Receivece msg from elevator '%s'", event.toString()));
 
 				// Pass the event to the elevator and wait for a message;
 				this.elevator.processFloorEvent(event);
@@ -61,7 +63,6 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 
 	@Override
 	public void onEventProcessed(ElevatorResponse message) {
-		// TODO: Message -> ElevatorResponse
 		Logger.println("Sending out message to Scheduler");
 		try {
 			elevatorSubsystemToSchedulerQueue.put(message);

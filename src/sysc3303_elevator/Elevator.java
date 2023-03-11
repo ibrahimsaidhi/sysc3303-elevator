@@ -39,7 +39,7 @@ public class Elevator implements Runnable {
 		this.buttonLampStates = new ButtonLampState[numberOfFloors];
 		Arrays.fill(buttonLampStates, ButtonLampState.OFF);
 
-		this.state = new IdleState();
+		this.state = new ElevatorInitState();
 		this.observers = new ArrayList<>();
 	}
 

@@ -32,6 +32,7 @@ public class Scheduler implements Runnable {
 	) {
 
 		List<Pair <Integer, BlockingReceiver<FloorEvent>>> floorList = new ArrayList<>();
+		this.floors = new HashMap<>();
 		int floor_i = 0;
 		for (var f: floors) {
 			floorList.add(new Pair<>(0, f.second()));
@@ -41,6 +42,7 @@ public class Scheduler implements Runnable {
 		this.floorReceiver = new ManyBlockingReceiver<FloorEvent>(floorList);
 
 		List<Pair<Integer, BlockingReceiver<ElevatorResponse>>> elevatorList = new ArrayList<>();
+		this.elevators = new HashMap<>();
 		int elevator_i = 0;
 		for (var elevator: elevators) {
 			elevatorList.add(new Pair<>(elevator_i, elevator.second()));
@@ -63,7 +65,12 @@ public class Scheduler implements Runnable {
 						var elevatorInfo = status.first().get();
 						if (elevatorInfo.state().equals(ElevatorStatus.Idle)) {
 							// Found idle elevator. Send request!
+							Logger.println("Sending go to command to elevator" + elevatorInfo.toString());
 							status.second().put(this.requestQueue.remove(0));
+
+							// No longer know the status of the elevator
+							this.elevators.put(entry.getKey(), new Pair<>(Optional.empty(), status.second()));
+
 							foundElement = true;
 							break;
 						}
@@ -83,9 +90,9 @@ public class Scheduler implements Runnable {
 
 	@Override
 	public void run() {
-		Thread floorThread = new Thread(floorReceiver);
+		Thread floorThread = new Thread(floorReceiver, "sche-floor");
 
-		Thread elevatorThread = new Thread(elevatorReceiver);
+		Thread elevatorThread = new Thread(elevatorReceiver, "sche-elev");
 
 		Thread t = new Thread(new Runnable() {
 
@@ -95,6 +102,7 @@ public class Scheduler implements Runnable {
 					try {
 						Pair<Integer, FloorEvent> event = floorReceiver.take();
 						FloorEvent e = event.second();
+						Logger.println("Got " + event.toString());
 						floors.get(event.first()).put(new Message("ack")); // TODO: Make this an actual message
 						synchronized (requestQueue) {
 							requestQueue.add(e);
@@ -106,15 +114,17 @@ public class Scheduler implements Runnable {
 				}
 			}
 
-		});
+		}, "sche-frecv");
 		floorThread.start();
 		elevatorThread.start();
 		t.start();
+		Logger.println("Scheduler initialized");
 
 		while(true) {
 			try {
 				Pair<Integer, ElevatorResponse> event = elevatorReceiver.take();
 				ElevatorResponse response = event.second();
+				Logger.println("Got " + event.toString());
 				var entry = this.elevators.get(event.first());
 				var entryUpdated = new Pair<>(Optional.of(response), entry.second());
 				this.elevators.put(event.first(), entryUpdated);
@@ -124,6 +134,8 @@ public class Scheduler implements Runnable {
 				break;
 			}
 		}
+
+		Logger.println("Scheduler interrupted");
 
 		floorThread.interrupt();
 		elevatorThread.interrupt();
