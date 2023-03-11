@@ -18,36 +18,7 @@ import sysc3303_elevator.networking.BlockingChannelBuilder;
  */
 public class Main {
 
-	/**
-	 * Used by `GroupBy` to turn an item into a key.
-	 *
-	 * @see GroupBy
-	 * @author Quinn Parrott
-	 */
-	public interface GrouperFunction<K, V> { K byKey(V t1); }
-
-	/**
-	 * Group a collection if items into buckets
-	 *
-	 * @param collection The list of items.
-	 * @param grouperFun The function that will choose which bucket an item goes into.
-	 * @author Quinn Parrott
-	 */
-	public static <K, V> HashMap<K, ArrayList<V>> GroupBy(Iterable<V> collection, GrouperFunction<K, V> grouperFun) {
-		var groups = new HashMap<K, ArrayList<V>>();
-
-		for (var item : collection) {
-			var key = grouperFun.byKey(item);
-			var groupItems = groups.getOrDefault(key, new ArrayList<>());
-			groupItems.add(item);
-			groups.putIfAbsent(key, groupItems);
-		}
-
-		return groups;
-	}
-
 	public static void Run(ArrayList<FloorEvent> events) {
-		var floors = GroupBy(events, event -> event.floor());
 
 		var floorToSchedulerQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<FloorEvent>());
 		var schedulerToFloorQueue = BlockingChannelBuilder.FromBlockingQueue(new LinkedBlockingQueue<Message>());
