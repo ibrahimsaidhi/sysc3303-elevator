@@ -18,58 +18,38 @@ import sysc3303_elevator.networking.ManyBlockingReceiver;
  */
 public class Scheduler implements Runnable {
 
-	// private BlockingReceiver<FloorEvent> floorToSchedulerQueue;
-	// private BlockingReceiver<Message> elevatorToSchedulerQueue;
-
-	// private BlockingSender<Message> schedulerToFloorQueue;
-	// private BlockingSender<FloorEvent> schedulerToElevatorQueue;
-
-	private SchedulerState state; // TODO: Might not need?
 	private ManyBlockingReceiver<FloorEvent> floorReceiver;
-	private ManyBlockingReceiver<Message> elevatorReceiver;
+	private ManyBlockingReceiver<ElevatorResponse> elevatorReceiver;
 
-	private HashMap<Integer, Pair<Optional<ElevatorInfo>, BlockingSender<FloorEvent>>> elevators;
+	private HashMap<Integer, Pair<Optional<ElevatorResponse>, BlockingSender<FloorEvent>>> elevators;
+	private HashMap<Integer, BlockingSender<Message>> floors;
 
 	private ArrayList<FloorEvent> requestQueue = new ArrayList<>();
 
-
 	public Scheduler(
-			List<Pair<BlockingSender<FloorEvent>, BlockingReceiver<Message>>> elevators,
+			List<Pair<BlockingSender<FloorEvent>, BlockingReceiver<ElevatorResponse>>> elevators,
 			List<Pair<BlockingSender<Message>, BlockingReceiver<FloorEvent>>> floors,
-			// BlockingReceiver<Message> elevatorToSchedulerQueue,
-			// BlockingSender<Message> schedulerToFloorQueue,
-			// BlockingReceiver<FloorEvent> floorToSchedulerQueue,
-			// BlockingSender<FloorEvent> schedulerToElevatorQueue
 	) {
 
-		List<Pair <Integer, BlockingReceiver<FloorEvent>>> elevatorList = new ArrayList<>();
+		List<Pair <Integer, BlockingReceiver<FloorEvent>>> floorList = new ArrayList<>();
+		int floor_i = 0;
+		for (var f: floors) {
+			floorList.add(new Pair<>(0, f.second()));
+			this.floors.put(floor_i, f.first());
+			floor_i += 1;
+		}
+		this.floorReceiver = new ManyBlockingReceiver<FloorEvent>(floorList);
+
+		List<Pair<Integer, BlockingReceiver<ElevatorResponse>>> elevatorList = new ArrayList<>();
 		int elevator_i = 0;
 		for (var elevator: elevators) {
 			elevatorList.add(new Pair<>(elevator_i, elevator.second()));
 			this.elevators.put(elevator_i, new Pair(Optional.empty(), elevator.first));
 			elevator_i += 1;
 		}
-
-		List<Pair <Integer, BlockingReceiver<Message>>> floorList = new ArrayList<>();
-		for (var f: floors) {
-			elevatorList.add(new Pair<>(0, f.second()));
-			//TODO: Integer is not necessarily needed
-		}
-
-		// this.floorToSchedulerQueue = floorToSchedulerQueue;
-		// this.elevatorToSchedulerQueue = elevatorToSchedulerQueue;
-		// this.schedulerToFloorQueue = schedulerToFloorQueue;
-		// this.schedulerToElevatorQueue = schedulerToElevatorQueue;
-		this.floorReceiver = new ManyBlockingReceiver<FloorEvent>(elevatorList);
-		this.elevatorReceiver = new ManyBlockingReceiver<Message>(floorList);
-		// this.state = new FloorListeningState(this);
+		this.elevatorReceiver = new ManyBlockingReceiver<ElevatorResponse>(elevatorList);
 
 	}
-
-	// public void setState(SchedulerState state) {
-	// 	// TODO: Might not need?
-	// 	this.state = state;
-	// }
 
 
 	public void trySendElevatorGoto() {
@@ -113,8 +93,9 @@ public class Scheduler implements Runnable {
 			public void run() {
 				while(true) {
 					try {
-						Pair <Integer, FloorEvent> event = floorReceiver.take();
+						Pair<Integer, FloorEvent> event = floorReceiver.take();
 						FloorEvent e = event.second();
+						floors.get(event.first()).put(new Message("ack")); // TODO: Make this an actual message
 						synchronized (requestQueue) {
 							requestQueue.add(e);
 						}
@@ -132,8 +113,12 @@ public class Scheduler implements Runnable {
 
 		while(true) {
 			try {
-				Pair<Integer, Message> event = elevatorReceiver.take();
-				Message e = event.second();
+				Pair<Integer, ElevatorResponse> event = elevatorReceiver.take();
+				ElevatorResponse response = event.second();
+				var entry = this.elevators.get(event.first());
+				var entryUpdated = new Pair<>(Optional.of(response), entry.second());
+				this.elevators.put(event.first(), entryUpdated);
+
 				trySendElevatorGoto();
 			} catch (InterruptedException e) {
 				break;
