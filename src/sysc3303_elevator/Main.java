@@ -27,11 +27,11 @@ public class Main {
 		var elevatorClient1 = new UdpClientQueue<FloorEvent, ElevatorResponse>(InetAddress.getLocalHost(),
 				elevatorPort);
 
-		var es1 = new ElevatorSubsystem(5, 1, elevatorClient1.getReceiver(), elevatorClient1.getSender());
+		var es1 = new ElevatorSubsystem(5, elevatorId, elevatorClient1.getReceiver(), elevatorClient1.getSender());
 
 		return ThreadHelper.runThreads("elevator_prog", new Thread[] {
 				new Thread(elevatorClient1, "elev_c_" + elevatorId),
-				new Thread(es1, "elevatorSubsytem" + elevatorId)
+				new Thread(es1, "elevator_syst__" + elevatorId)
 		});
 	}
 
@@ -79,7 +79,10 @@ public class Main {
 
 		ThreadHelper.runThreads("root", new Thread[] {
 			RunElevator(1),
-			RunElevator(2),
+			// RunElevator(2),
+			// RunElevator(3),
+			// RunElevator(4),
+			// RunElevator(5),
 			RunFloor(events),
 			RunScheduler(),
 		}).join();
