@@ -36,7 +36,7 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 		this.elevator = new Elevator(numberOfFloors);
 		this.elevator.addObserver(this);
 
-		this.elevatorThread = new Thread(this.elevator, "elevator " + elevatorId);
+		this.elevatorThread = new Thread(this.elevator, "elevator_state_" + elevatorId);
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 			try {
 
 				FloorEvent event = this.schedulerToElevatorSubsystemQueue.take();
-				Logger.debugln(String.format("Receivece msg from elevator '%s'", event.toString()));
+				Logger.debugln(String.format("Received msg from scheduler '%s'", event.toString()));
 
 				// Pass the event to the elevator and wait for a message;
 				this.elevator.processFloorEvent(event);
