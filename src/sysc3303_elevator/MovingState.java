@@ -13,7 +13,7 @@ public class MovingState implements ElevatorState {
 			Thread.sleep(1000);
 			int nextFloor = elevator.getCurrentFloor() + (elevator.getDirection() == Direction.Up ? 1 : -1);
 			elevator.setCurrentFloor(nextFloor);
-			Logger.println("Elevator is on floor " + nextFloor);
+			Logger.println("Floor: " + nextFloor);
 		}
 		elevator.getButtonLampStates()[elevator.getDestinationFloors().get(0)] = ButtonLampState.OFF;
 		Logger.debugln("Elevator reached destination floor: " + destinationFloor + ". Car button lamp is " + elevator.getButtonLampStates()[destinationFloor]

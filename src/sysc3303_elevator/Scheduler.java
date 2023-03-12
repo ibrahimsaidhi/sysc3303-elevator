@@ -36,15 +36,17 @@ public class Scheduler<I, R> implements Runnable {
 		// TODO: Narrow down the sync block
 		synchronized (this.requestQueue) {
 			while (this.requestQueue.size() > 0) {
+				Logger.debugln("Queue size: " + this.requestQueue.size());
 				boolean foundElement = false;
 				for (var entry : this.elevatorStateCache.entrySet()) {
 					var channelId = entry.getKey();
 					var status = entry.getValue();
+					Logger.debugln("Entry " + channelId + " " + status);
 					if (status.isPresent()) {
 						var elevatorInfo = status.get();
 						if (elevatorInfo.state().equals(ElevatorStatus.Idle)) {
 							// Found idle elevator. Send request!
-							Logger.println("Sending elevator goto" + elevatorInfo.toString());
+							Logger.println("Goto:  Sending to " + channelId + " with state " + elevatorInfo.toString());
 
 							this.elevatorMux
 									.put(new TaggedMsg<I, FloorEvent>(channelId, this.requestQueue.remove(0)));
@@ -89,7 +91,7 @@ public class Scheduler<I, R> implements Runnable {
 				}
 			}
 
-		}, "sche-frecv");
+		}, "sche_floor_receive");
 		t.start();
 		Logger.println("Scheduler initialized");
 

@@ -5,11 +5,11 @@ public class Logger {
 
 	public synchronized static void debugln(String msg) {
 		if (DEBUG) {
-			System.out.println(String.format("%16s: %s",Thread.currentThread().getName(), msg));
+			System.out.println(String.format("%18s: %s",Thread.currentThread().getName(), msg));
 		}
 	}
 
 	public synchronized static void println(String msg) {
-		System.out.println(String.format("%16s: %s",Thread.currentThread().getName(), msg));
+		System.out.println(String.format("%18s: %s",Thread.currentThread().getName(), msg));
 	}
 }
