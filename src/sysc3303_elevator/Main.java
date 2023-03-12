@@ -20,49 +20,46 @@ import sysc3303_elevator.networking.UdpServerQueue.UdpClientIdentifier;
  */
 public class Main {
 
-	public static void Run(ArrayList<FloorEvent> events) throws SocketException, UnknownHostException {
-		int floorPort = 10101;
-		int elevatorPort = 10102;
+	private static final Integer floorPort = 10101;
+	private static final Integer elevatorPort = 10102;
 
-		var floorClient1 = new UdpClientQueue<Message, FloorEvent>(InetAddress.getLocalHost(), floorPort);
-		var floorServer = new UdpServerQueue<Message, FloorEvent>(floorPort);
-
-		var elevatorClient1 = new UdpClientQueue<FloorEvent, ElevatorResponse>(InetAddress.getLocalHost(), elevatorPort);
-		var elevatorServer = new UdpServerQueue<FloorEvent, ElevatorResponse>(elevatorPort);
+	public static Thread RunElevator(int elevatorId) throws SocketException, UnknownHostException {
+		var elevatorClient1 = new UdpClientQueue<FloorEvent, ElevatorResponse>(InetAddress.getLocalHost(),
+				elevatorPort);
 
 		var es1 = new ElevatorSubsystem(5, 1, elevatorClient1.getReceiver(), elevatorClient1.getSender());
 
-		var f1 = new Floor(floorClient1.getSender(), floorClient1.getReceiver(), events);
+		return ThreadHelper.runThreads("elevator_prog", new Thread[] {
+				new Thread(elevatorClient1, "elev_c_" + elevatorId),
+				new Thread(es1, "elevatorSubsytem" + elevatorId)
+		});
+	}
+
+	public static Thread RunScheduler() throws SocketException, UnknownHostException {
+		var floorServer = new UdpServerQueue<Message, FloorEvent>(floorPort);
+
+		var elevatorServer = new UdpServerQueue<FloorEvent, ElevatorResponse>(elevatorPort);
 
 		var s1 = new Scheduler<UdpClientIdentifier, UdpClientIdentifier>(elevatorServer, floorServer);
 
-		var threads = new Thread[] {
-				new Thread(f1, "floor_1"),
+		return ThreadHelper.runThreads("scheduler_prog", new Thread[] {
 				new Thread(s1, "scheduler_1"),
-				new Thread(floorClient1, "floor_c_1"),
-				new Thread(elevatorClient1, "elev_c_1"),
 				new Thread(floorServer, "floor_serv"),
 				new Thread(elevatorServer, "elev_serv"),
-				new Thread(es1, "elevatorSubsytem")
-		};
-
-		for (var thread : threads) {
-			Logger.println(String.format("Starting '%s'", thread.getName()));
-			thread.start();
-		}
-
-		// Wait for all threads to exit
-		for (var thread : threads) {
-			try {
-				thread.join();
-				Logger.println(String.format("Thread '%s' joined", thread.getName()));
-			} catch (InterruptedException e) {
-			}
-		}
-		Logger.println("All done.");
+		});
 	}
 
-	public static void main(String[] args) throws SocketException, UnknownHostException {
+	public static Thread RunFloor(ArrayList<FloorEvent> events) throws SocketException, UnknownHostException {
+		var floorClient1 = new UdpClientQueue<Message, FloorEvent>(InetAddress.getLocalHost(), floorPort);
+		var f1 = new Floor(floorClient1.getSender(), floorClient1.getReceiver(), events);
+
+		return ThreadHelper.runThreads("floors_prog", new Thread[] {
+				new Thread(f1, "floor_1"),
+				new Thread(floorClient1, "floor_c_1"),
+		});
+	}
+
+	public static void main(String[] args) throws SocketException, UnknownHostException, InterruptedException {
 
 		Optional<InputStream> fileStream = Optional.empty();
 		fileStream = Optional.of(new ByteArrayInputStream(
@@ -77,7 +74,18 @@ public class Main {
 		}
 
 		var floorReader = new FloorFormatReader(fileStream.get());
-		Run(floorReader.toList());
+		var events = floorReader.toList();
+
+
+		ThreadHelper.runThreads("root", new Thread[] {
+			RunElevator(1),
+			RunElevator(2),
+			RunFloor(events),
+			RunScheduler(),
+		}).join();
+
+
+		Logger.println("All done.");
 	}
 
 }
