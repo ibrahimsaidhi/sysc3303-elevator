@@ -52,7 +52,7 @@ class ElevatorTest {
 		};
 
 		var e1 = new ElevatorSubsystem(
-				2,
+				5,
 				1,
 				inbound,
 				outbound
@@ -67,12 +67,12 @@ class ElevatorTest {
 		assertEquals(3, inbound.takeCount);
 		assertEquals(1, outbound.count);
 	}
-	
+
 	@Test
     public void testProcessFloorEvent() throws InterruptedException {
-		
+
 		var event1 = new FloorEvent(null, 5, Direction.Down, 3);
-		
+
         Elevator elevator = new Elevator(10);
         assertEquals(elevator.getCurrentFloor(), Integer.valueOf(1));
 
@@ -82,21 +82,21 @@ class ElevatorTest {
         assertEquals(elevator.getDestinationFloors().get(1), Integer.valueOf(3));
         assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.ON);
         assertEquals(elevator.getState().getClass(), MovingState.class);
-        
+
         elevator.getState().advance(elevator);
         assertEquals(elevator.getCurrentFloor(), Integer.valueOf(5));
         assertEquals(elevator.getState().getClass(), DoorOpenState.class);
-        
-        
+
+
         elevator.getState().advance(elevator);
         assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.ON);
         assertEquals(elevator.getState().getClass(), DoorClosedState.class);
-        
+
         elevator.getState().advance(elevator);
         assertEquals(elevator.getState().getClass(), MovingState.class);
-        
+
         elevator.getState().advance(elevator);
-        
+
         assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.OFF);
         assertEquals(elevator.getState().getClass(), DoorOpenState.class);
         assertEquals(elevator.getCurrentFloor(), Integer.valueOf(3));
