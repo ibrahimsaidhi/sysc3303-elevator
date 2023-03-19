@@ -20,6 +20,7 @@ public class Elevator implements Runnable {
 	private ButtonLampState[] buttonLampStates;
 	private List<Integer> destinationFloors;
 	private ElevatorState state;
+	private ElevatorStatus status;
 	private List<ElevatorObserver> observers;
 
 	/**
@@ -37,7 +38,7 @@ public class Elevator implements Runnable {
 		this.buttonLampStates = new ButtonLampState[numberOfFloors];
 		Arrays.fill(buttonLampStates, ButtonLampState.OFF);
 
-		this.state = new ElevatorInitState();
+		this.state = new ElevatorInitState(this);
 		this.observers = new ArrayList<>();
 	}
 
@@ -92,7 +93,7 @@ public class Elevator implements Runnable {
 	}
 
 	public void setState(ElevatorState state) {
-		Logger.println("State: " + state.getClass().getSimpleName());
+		Logger.debugln("State: " + state.getClass().getSimpleName());
 		this.state = state;
 	}
 
@@ -112,6 +113,15 @@ public class Elevator implements Runnable {
 		for (ElevatorObserver observer : observers) {
 			observer.onEventProcessed(message);
 		}
+	}
+
+	public void setStatus(ElevatorStatus status) {
+		Logger.println("Status: " + status);
+		this.status = status;
+	}
+
+	public ElevatorStatus getStatus() {
+		return status;
 	}
 
 	/**
@@ -135,12 +145,12 @@ public class Elevator implements Runnable {
 				this.getButtonLampStates()[carButton] = ButtonLampState.ON;
 
 				if (this.getCurrentFloor() != this.getDestinationFloors().get(0)) {
-					this.setState(new MovingState());
+					this.setState(new MovingState(this));
 				} else {
 					this.getDestinationFloors().remove(0);
 					Logger.debugln("Opening doors");
 					this.setDoorState(DoorState.OPEN);
-					this.setState(new DoorOpenState());
+					this.setState(new DoorOpenState(this));
 				}
 
 			} else {

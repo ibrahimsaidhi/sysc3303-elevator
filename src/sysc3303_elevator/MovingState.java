@@ -1,6 +1,10 @@
 package sysc3303_elevator;
 
 public class MovingState implements ElevatorState {
+	public MovingState(Elevator elevator) {
+		elevator.setStatus(ElevatorStatus.Moving);
+	}
+
 	@Override
 	public void advance(Elevator elevator) throws InterruptedException {
 		int destinationFloor = elevator.getDestinationFloors().get(0);
@@ -23,6 +27,6 @@ public class MovingState implements ElevatorState {
 		elevator.setMoving(false);
 		elevator.setDoorState(DoorState.OPEN);
 
-		elevator.setState(new DoorOpenState());
+		elevator.setState(new DoorOpenState(elevator));
 	}
 }

@@ -1,8 +1,9 @@
 package sysc3303_elevator;
 
 public enum ElevatorStatus {
+    Init,
     Idle,
-    Up,
-    Down,
-    Unknown,
+    Moving,
+    DoorOpen,
+    DoorClose,
 }
