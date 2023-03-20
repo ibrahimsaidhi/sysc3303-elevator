@@ -7,22 +7,22 @@ public class MovingState implements ElevatorState {
 
 	@Override
 	public void advance(Elevator elevator) throws InterruptedException {
-		int destinationFloor = elevator.getDestinationFloors().get(0);
+		var queue = elevator.getDestinationFloors();
+		int destinationFloor = queue.peek().get();
 
 		// Start moving
 		elevator.setMoving(true);
 		Logger.debugln("Elevator doors are " + elevator.getDoorState() + ", motor is ON. Car button " + destinationFloor + " lamp is " + elevator.getButtonLampStates()[destinationFloor]
 				+ " Elevator is moving " + elevator.getDirection());
-		while (elevator.getCurrentFloor() != destinationFloor) {
+		while (queue.getCurrentFloor() != destinationFloor) {
 			Thread.sleep(1000);
-			int nextFloor = elevator.getCurrentFloor() + (elevator.getDirection() == Direction.Up ? 1 : -1);
-			elevator.setCurrentFloor(nextFloor);
-			Logger.println("Floor: " + nextFloor);
+			queue.advance();
+			Logger.println("Floor: " + queue.getCurrentFloor());
 		}
-		elevator.getButtonLampStates()[elevator.getDestinationFloors().get(0)] = ButtonLampState.OFF;
+		elevator.getButtonLampStates()[queue.peek().get()] = ButtonLampState.OFF;
 		Logger.debugln("Elevator reached destination floor: " + destinationFloor + ". Car button lamp is " + elevator.getButtonLampStates()[destinationFloor]
 				+ ". Motor is OFF. Elevator is not moving... Opening doors");
-		elevator.getDestinationFloors().remove(0);
+		queue.next();
 		elevator.setMotorOn(false);
 		elevator.setMoving(false);
 		elevator.setDoorState(DoorState.OPEN);

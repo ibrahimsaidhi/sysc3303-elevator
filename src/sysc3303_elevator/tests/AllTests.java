@@ -5,6 +5,7 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
+	ElevatorQueueTest.class,
 	ElevatorTest.class,
 	FloorFormatReaderTest.class,
 	FloorTest.class,

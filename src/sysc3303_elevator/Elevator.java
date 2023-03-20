@@ -13,12 +13,11 @@ import java.util.List;
  * @author Tao Lufula, 101164153
  */
 public class Elevator implements Runnable {
-	private int currentFloor;
 	private boolean isMoving;
 	private boolean isMotorOn;
 	private DoorState doorState;
 	private ButtonLampState[] buttonLampStates;
-	private List<Integer> destinationFloors;
+	private ElevatorQueue destionationQueue;
 	private ElevatorState state;
 	private ElevatorStatus status;
 	private List<ElevatorObserver> observers;
@@ -29,25 +28,16 @@ public class Elevator implements Runnable {
 	 */
 	public Elevator(int numberOfFloors) {
 
-		this.currentFloor = 1; // Main Floor
 		this.isMoving = false;
 		this.isMotorOn = false;
 		this.doorState = DoorState.CLOSED;
-		this.destinationFloors = new ArrayList<>();
+		this.destionationQueue = new ElevatorQueue(1);
 
 		this.buttonLampStates = new ButtonLampState[numberOfFloors];
 		Arrays.fill(buttonLampStates, ButtonLampState.OFF);
 
 		this.state = new ElevatorInitState(this);
 		this.observers = new ArrayList<>();
-	}
-
-	public int getCurrentFloor() {
-		return currentFloor;
-	}
-
-	public void setCurrentFloor(int currentFloor) {
-		this.currentFloor = currentFloor;
 	}
 
 	public boolean isMotorOn() {
@@ -76,8 +66,7 @@ public class Elevator implements Runnable {
 	}
 
 	public Direction getDirection() {
-		var destFloor = this.getDestinationFloors().isEmpty() ? 0 : this.getDestinationFloors().get(0);
-		return (currentFloor < destFloor) ? Direction.Up : Direction.Down;
+		return this.destionationQueue.getDirection();
 	}
 
 	public ButtonLampState[] getButtonLampStates() {
@@ -88,8 +77,8 @@ public class Elevator implements Runnable {
 		this.buttonLampStates = buttonLampStates;
 	}
 
-	public List<Integer> getDestinationFloors() {
-		return destinationFloors;
+	public ElevatorQueue getDestinationFloors() {
+		return this.destionationQueue;
 	}
 
 	public void setState(ElevatorState state) {
@@ -134,37 +123,33 @@ public class Elevator implements Runnable {
 	 * @author Tao Lufula, 101164153
 	 */
 	public void processFloorEvent(FloorEvent event) {
-		synchronized (this.destinationFloors) {
+		var queue = this.getDestinationFloors();
+		int carButton = event.carButton();
+		int floorButton = event.floor();
 
-			int carButton = event.carButton();
-			int floorButton = event.floor();
+		if (carButton != 0 && floorButton != carButton) {
+			queue.add(floorButton);
+			queue.add(carButton);
+			this.getButtonLampStates()[carButton] = ButtonLampState.ON;
 
-			if (carButton != 0 && floorButton != carButton) {
-				this.getDestinationFloors().add(floorButton);
-				this.getDestinationFloors().add(carButton);
-				this.getButtonLampStates()[carButton] = ButtonLampState.ON;
-
-				if (this.getCurrentFloor() != this.getDestinationFloors().get(0)) {
-					this.setState(new MovingState(this));
-				} else {
-					this.getDestinationFloors().remove(0);
-					Logger.debugln("Opening doors");
-					this.setDoorState(DoorState.OPEN);
-					this.setState(new DoorOpenState(this));
-				}
-
+			if (queue.getCurrentFloor() != queue.peek().get()) {
+				this.setState(new MovingState(this));
 			} else {
-				Logger.println("Invalid floor event");
+				queue.next();
+				Logger.debugln("Opening doors");
+				this.setDoorState(DoorState.OPEN);
+				this.setState(new DoorOpenState(this));
 			}
+
+		} else {
+			Logger.println("Invalid floor event");
 		}
 	}
 
 	public void run() {
 		while (true) {
 			try {
-				synchronized (this.destinationFloors) {
-					state.advance(this);
-				}
+				state.advance(this);
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				break;

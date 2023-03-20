@@ -8,7 +8,7 @@ public class ElevatorInitState implements ElevatorState {
 
     @Override
     public void advance(Elevator elevator) {
-        var response = new ElevatorResponse(elevator.getCurrentFloor(), ElevatorStatus.Idle);
+        var response = new ElevatorResponse(elevator.getDestinationFloors().getCurrentFloor(), ElevatorStatus.Idle);
         elevator.notifyObservers(response);
 
         elevator.setState(new IdleState(elevator));

@@ -7,22 +7,23 @@ public class DoorClosedState implements ElevatorState {
 
 	@Override
 	public void advance(Elevator elevator) {
-		if (elevator.getDestinationFloors().isEmpty()) {
+		var queue = elevator.getDestinationFloors();
+		if (queue.peek().isEmpty()) {
 			elevator.setState(new IdleState(elevator));
 
-			var response = new ElevatorResponse(elevator.getCurrentFloor(), elevator.getStatus());
+			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus());
 			elevator.notifyObservers(response);
 			return;
 		}
-		if (elevator.getCurrentFloor() != elevator.getDestinationFloors().get(0)) {
+		if (queue.getCurrentFloor() != queue.peek().get()) {
 			elevator.setState(new MovingState(elevator));
-			var response = new ElevatorResponse(elevator.getCurrentFloor(), elevator.getStatus());
+			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus());
 			elevator.notifyObservers(response);
 		} else {
-			elevator.getButtonLampStates()[elevator.getDestinationFloors().get(0)] = ButtonLampState.OFF;
+			elevator.getButtonLampStates()[queue.peek().get()] = ButtonLampState.OFF;
 			Logger.debugln("Opening doors");
 			elevator.setDoorState(DoorState.OPEN);
-			elevator.getDestinationFloors().remove(0);
+			queue.next();
 			elevator.setState(new DoorOpenState(elevator));
 		}
 	}
