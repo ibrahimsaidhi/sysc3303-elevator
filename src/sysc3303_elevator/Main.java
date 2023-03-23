@@ -22,6 +22,7 @@ public class Main {
 
 	private static final Integer floorPort = 10101;
 	private static final Integer elevatorPort = 10102;
+	private static final String FILE_PATH = "input.txt";
 
 	public static Thread RunElevator(int elevatorId) throws SocketException, UnknownHostException {
 		var elevatorClient1 = new UdpClientQueue<FloorEvent, ElevatorResponse>(InetAddress.getLocalHost(),
@@ -58,20 +59,21 @@ public class Main {
 				new Thread(floorClient1, "floor_c_1"),
 		});
 	}
-
+	
+    private static Optional<InputStream> readFile() {  	
+        try {
+            return Optional.of(new FileInputStream(FILE_PATH));
+        } catch (FileNotFoundException ex) { 
+            ex.printStackTrace();
+            return Optional.empty();
+        }
+    }
 	public static void main(String[] args) throws SocketException, UnknownHostException, InterruptedException {
-
-		Optional<InputStream> fileStream = Optional.empty();
-		fileStream = Optional.of(new ByteArrayInputStream(
-				"14:05:15.0 2 up 4\n14:05:16.0 1 up 3\n14:05:17.0 3 down 2\n14:05:18.0 2 up 3".getBytes()));
-		try {
-			if (fileStream.isEmpty()) {
-				fileStream = Optional.of(new FileInputStream(args[0]));
-			}
-		} catch (FileNotFoundException ex) {
-			ex.printStackTrace();
-			return;
-		}
+		
+        Optional<InputStream> fileStream = readFile();
+        if (fileStream.isEmpty()) {
+            return; // If the InputStream is empty, stop the program execution
+        }
 
 		var floorReader = new FloorFormatReader(fileStream.get());
 		var events = floorReader.toList();
