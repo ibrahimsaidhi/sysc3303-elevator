@@ -5,4 +5,5 @@ public enum ElevatorStatus {
     Up,
     Down,
     Unknown,
+    failed,
 }

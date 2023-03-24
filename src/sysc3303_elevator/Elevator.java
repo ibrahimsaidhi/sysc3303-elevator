@@ -3,6 +3,7 @@ package sysc3303_elevator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
 
 /**
  * Elevator Class
@@ -21,6 +22,7 @@ public class Elevator implements Runnable {
 	private List<Integer> destinationFloors;
 	private ElevatorState state;
 	private List<ElevatorObserver> observers;
+	private boolean hasFailed;
 
 	/**
 	 * Constructor for Elevator Class
@@ -39,6 +41,7 @@ public class Elevator implements Runnable {
 
 		this.state = new ElevatorInitState();
 		this.observers = new ArrayList<>();
+		this.hasFailed = false;
 	}
 
 	public int getCurrentFloor() {
@@ -128,7 +131,9 @@ public class Elevator implements Runnable {
 
 			int carButton = event.carButton();
 			int floorButton = event.floor();
-
+			
+			int processingTime = 3000;
+			
 			if (carButton != 0 && floorButton != carButton) {
 				this.getDestinationFloors().add(floorButton);
 				this.getDestinationFloors().add(carButton);
@@ -136,11 +141,50 @@ public class Elevator implements Runnable {
 
 				if (this.getCurrentFloor() != this.getDestinationFloors().get(0)) {
 					this.setState(new MovingState());
+					
+					
+					Thread timer = new Thread(() -> {
+						Logger.println("STARTING MY TIMER");
+						try {
+							Thread.sleep(processingTime);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						
+						if(this.getCurrentFloor() != carButton) {
+							Logger.println("ALERT!!!!!!! ELEVATOR LATE");
+//							this.setState(new ElevatorFailState());
+							this.hasFailed = true;
+						}
+						
+					}); timer.start();
+					
+					
+					
 				} else {
 					this.getDestinationFloors().remove(0);
 					Logger.debugln("Opening doors");
 					this.setDoorState(DoorState.OPEN);
 					this.setState(new DoorOpenState());
+					
+					
+					Thread timer = new Thread(() -> {
+						Logger.println("STARTING MY TIMER");
+						try {
+							Thread.sleep(processingTime);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						
+						if(this.getCurrentFloor() != carButton) {
+							Logger.println("ALERT!!!!!!! ELEVATOR LATE");
+//							this.setState(new ElevatorFailState());
+							this.hasFailed = true;
+						}
+						
+					}); timer.start();
+					
+					
 				}
 
 			} else {
@@ -160,6 +204,14 @@ public class Elevator implements Runnable {
 				break;
 			}
 		}
+	}
+
+	public void clearDestinationFloors() {
+		this.destinationFloors.clear();
+	}
+
+	public boolean getfialed() {
+		return this.hasFailed;
 	}
 
 }
