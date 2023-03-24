@@ -5,7 +5,6 @@ package sysc3303_elevator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Optional;
 
 import sysc3303_elevator.networking.TaggedMsg;
 import sysc3303_elevator.networking.BlockingMultiplexer;
@@ -19,14 +18,13 @@ public class Scheduler<I, R> implements Runnable {
 	private BlockingMultiplexer<I, FloorEvent, ElevatorResponse> elevatorMux;
 	private BlockingMultiplexer<R, Message, FloorEvent> floorMux;
 
-	private HashMap<I, Optional<ElevatorResponse>> elevatorStateCache;
+	private HashMap<I, ElevatorResponse> elevatorStateCache;
 
 	private ArrayList<FloorEvent> requestQueue = new ArrayList<>();
 
 	public Scheduler(
 			BlockingMultiplexer<I, FloorEvent, ElevatorResponse> elevatorMux,
-			BlockingMultiplexer<R, Message, FloorEvent> floorMux
-	) {
+			BlockingMultiplexer<R, Message, FloorEvent> floorMux) {
 		this.elevatorStateCache = new HashMap<>();
 		this.elevatorMux = elevatorMux;
 		this.floorMux = floorMux;
@@ -40,10 +38,8 @@ public class Scheduler<I, R> implements Runnable {
 				boolean foundElement = false;
 				for (var entry : this.elevatorStateCache.entrySet()) {
 					var channelId = entry.getKey();
-					var status = entry.getValue();
-					Logger.debugln("Entry " + channelId + " " + status);
-					if (status.isPresent()) {
-						var elevatorInfo = status.get();
+					var elevatorInfo = entry.getValue();
+					Logger.debugln("Entry " + channelId + " " + elevatorInfo);
 						if (elevatorInfo.state().equals(ElevatorStatus.Idle)) {
 							// Found idle elevator. Send request!
 							Logger.println("Goto:  Sending to " + channelId + " with state " + elevatorInfo.toString());
@@ -56,7 +52,6 @@ public class Scheduler<I, R> implements Runnable {
 
 							foundElement = true;
 							break;
-						}
 					}
 				}
 
@@ -100,7 +95,7 @@ public class Scheduler<I, R> implements Runnable {
 				TaggedMsg<I, ElevatorResponse> event = elevatorMux.take();
 				ElevatorResponse response = event.content();
 				Logger.debugln("Got " + event.toString());
-				this.elevatorStateCache.put(event.id(), Optional.of(response));
+				this.elevatorStateCache.put(event.id(), response);
 
 				trySendElevatorGoto();
 			} catch (InterruptedException e) {
