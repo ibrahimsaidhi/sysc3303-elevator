@@ -12,15 +12,21 @@ public class MovingState implements ElevatorState {
 
 		// Start moving
 		elevator.setMoving(true);
-		Logger.debugln("Elevator doors are " + elevator.getDoorState() + ", motor is ON. Car button " + destinationFloor + " lamp is " + elevator.getButtonLampStates()[destinationFloor]
+		Logger.debugln("Elevator doors are " + elevator.getDoorState() + ", motor is ON. Car button " + destinationFloor
+				+ " lamp is " + elevator.getButtonLampStates()[destinationFloor]
 				+ " Elevator is moving " + elevator.getDirection());
 		while (queue.getCurrentFloor() != destinationFloor) {
+			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
+			elevator.notifyObservers(response);
 			Thread.sleep(1000);
 			queue.advance();
 			Logger.println("Floor: " + queue.getCurrentFloor());
 		}
+		var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
+		elevator.notifyObservers(response);
 		elevator.getButtonLampStates()[queue.peek().get()] = ButtonLampState.OFF;
-		Logger.debugln("Elevator reached destination floor: " + destinationFloor + ". Car button lamp is " + elevator.getButtonLampStates()[destinationFloor]
+		Logger.debugln("Elevator reached destination floor: " + destinationFloor + ". Car button lamp is "
+				+ elevator.getButtonLampStates()[destinationFloor]
 				+ ". Motor is OFF. Elevator is not moving... Opening doors");
 		queue.next();
 		elevator.setMotorOn(false);
