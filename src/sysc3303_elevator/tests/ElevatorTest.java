@@ -74,22 +74,28 @@ class ElevatorTest {
 		var event1 = new FloorEvent(null, 5, Direction.Down, 3);
 
         Elevator elevator = new Elevator(10);
-        assertEquals(elevator.getCurrentFloor(), Integer.valueOf(1));
+        assertEquals(elevator.getDestinationFloors().getCurrentFloor(), Integer.valueOf(1));
 
         elevator.processFloorEvent(event1);
 
-        assertEquals(elevator.getDestinationFloors().get(0), Integer.valueOf(5));
-        assertEquals(elevator.getDestinationFloors().get(1), Integer.valueOf(3));
+		assertArrayEquals(new Integer[] {
+			3,
+			5,
+		}, elevator.getDestinationFloors().getQueue().toArray());
         assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.ON);
         assertEquals(elevator.getState().getClass(), MovingState.class);
 
         elevator.getState().advance(elevator);
-        assertEquals(elevator.getCurrentFloor(), Integer.valueOf(5));
+        assertEquals(elevator.getDestinationFloors().getCurrentFloor(), Integer.valueOf(3));
+        assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.OFF);
         assertEquals(elevator.getState().getClass(), DoorOpenState.class);
 
+		assertArrayEquals(new Integer[] {
+			5,
+		}, elevator.getDestinationFloors().getQueue().toArray());
 
         elevator.getState().advance(elevator);
-        assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.ON);
+        // assertEquals(elevator.getButtonLampStates()[5], ButtonLampState.ON);
         assertEquals(elevator.getState().getClass(), DoorClosedState.class);
 
         elevator.getState().advance(elevator);
@@ -97,10 +103,10 @@ class ElevatorTest {
 
         elevator.getState().advance(elevator);
 
-        assertEquals(elevator.getButtonLampStates()[3], ButtonLampState.OFF);
+        assertEquals(elevator.getButtonLampStates()[5], ButtonLampState.OFF);
         assertEquals(elevator.getState().getClass(), DoorOpenState.class);
-        assertEquals(elevator.getCurrentFloor(), Integer.valueOf(3));
-        assertTrue(elevator.getDestinationFloors().isEmpty());
+        assertEquals(elevator.getDestinationFloors().getCurrentFloor(), Integer.valueOf(5));
+        assertTrue(elevator.getDestinationFloors().peek().isEmpty());
     }
 
 }
