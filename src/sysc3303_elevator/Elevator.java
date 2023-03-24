@@ -124,13 +124,13 @@ public class Elevator implements Runnable {
 	 */
 	public void processFloorEvent(FloorEvent event) {
 		var queue = this.getDestinationFloors();
-		int carButton = event.carButton();
-		int floorButton = event.floor();
+		int destFloor = event.destFloor();
+		int srcFloor = event.srcFloor();
 
-		if (carButton != 0 && floorButton != carButton) {
-			queue.add(floorButton);
-			queue.add(carButton);
-			this.getButtonLampStates()[carButton] = ButtonLampState.ON;
+		if (destFloor != 0 && srcFloor != destFloor) {
+			queue.add(srcFloor);
+			queue.add(destFloor);
+			this.getButtonLampStates()[destFloor] = ButtonLampState.ON;
 
 			if (queue.getCurrentFloor() != queue.peek().get()) {
 				this.setState(new MovingState(this));

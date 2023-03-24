@@ -20,7 +20,7 @@ import sysc3303_elevator.networking.BlockingSender;
 
 /**
  * FloorTest
- * test if the floor class is correctly passingfloorevents to the scheduler 
+ * test if the floor class is correctly passingfloorevents to the scheduler
  * @author Hamza
  * @version 1.0
  *
@@ -29,7 +29,7 @@ import sysc3303_elevator.networking.BlockingSender;
 public class FloorTest {
 	/**
 	 * testValidation1
-	 * pass a valid floorEvent method validateRequest 
+	 * pass a valid floorEvent method validateRequest
 	 * @throws IOException
 	 */
 	@Test
@@ -41,14 +41,14 @@ public class FloorTest {
 		eventList.add(floorevent);
 		Floor floor = new Floor(floorToScheduler ,schedulerToFloor , eventList);
 		Direction direction = eventList.get(0).direction();
-		int newFloor = eventList.get(0).carButton();
-		int currFloor = eventList.get(0).floor();
+		int newFloor = eventList.get(0).destFloor();
+		int currFloor = eventList.get(0).srcFloor();
 		assertEquals(floor.validateRequest(direction, newFloor, currFloor), true);
-		
+
 	}
 	/**
 	 * testValidation2
-	 * pass a valid floorEvent method validateRequest 
+	 * pass a valid floorEvent method validateRequest
 	 * @throws IOException
 	 */
 	@Test
@@ -60,9 +60,9 @@ public class FloorTest {
 		eventList.add(floorevent);
 		Floor floor = new Floor(floorToScheduler ,schedulerToFloor , eventList);
 		Direction direction = eventList.get(0).direction();
-		int newFloor = eventList.get(0).carButton();
+		int newFloor = eventList.get(0).destFloor();
 		assertEquals(floor.validateRequest(direction, newFloor, newFloor), false);
-		
+
 	}
 	@Test
 	/**
