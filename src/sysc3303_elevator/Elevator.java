@@ -3,6 +3,8 @@ package sysc3303_elevator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.Timer;
 
 /**
  * Elevator Class
@@ -26,8 +28,8 @@ public class Elevator implements Runnable {
 	private final int TIME_BTW_FLOORS = 1000; // milliseconds
 	private final int DOOR_CLOSING_TIME = 1000; // milliseconds
 	private final int TIME_BTW_FLOORS_THRESHOLD = 1200; // maximum time for moving between floors or closing door in
-															// milliseconds
 	private final int DOOR_CLOSING_TIME_THRESHOLD = 1200;
+	private Optional<Thread> timer = Optional.empty();	
 
 	/**
 	 * Constructor for Elevator Class
@@ -197,38 +199,44 @@ public class Elevator implements Runnable {
 		return false;
 	}
 
-	public void timeEvent(ElevatorStatus status) {
-		Thread timer = new Thread(() -> {
-			int previousFloor = destionationQueue.getCurrentFloor();
-
-			if (status.equals(ElevatorStatus.DoorOpen)) {
-				countDown(DOOR_CLOSING_TIME_THRESHOLD);
-				if (state.getClass().equals(DoorClosedState.class)) {
-					return;
+	public void startTimer(ElevatorStatus status) throws InterruptedException {
+		stopTimer();
+		timer = Optional.of(new Thread(() -> {
+			try {
+				int previousFloor = destionationQueue.getCurrentFloor();
+	
+				if (status.equals(ElevatorStatus.DoorOpen)) {
+					Thread.sleep(DOOR_CLOSING_TIME_THRESHOLD);
+					if (state.getClass().equals(DoorClosedState.class)) {
+						return;
+					}
+					setdoorStuck(true);
+	
+				} else if (status.equals(ElevatorStatus.Moving)) {
+					Thread.sleep(TIME_BTW_FLOORS_THRESHOLD);
+					if (previousFloor == destionationQueue.getCurrentFloor()) {
+						setstuckBtwFloors(true);
+					}
+				} else {
+	
+					return; // add more actions
 				}
-				setdoorStuck(true);
-
-			} else if (status.equals(ElevatorStatus.Moving)) {
-				countDown(TIME_BTW_FLOORS_THRESHOLD);
-				if (previousFloor == destionationQueue.getCurrentFloor()) {
-					setstuckBtwFloors(true);
-				}
-			} else {
-
-				return; // add more actions
+			}catch (InterruptedException e) {
+				return;
 			}
 
-		});
-		timer.start();
+		}));
+		timer.get().start();
+	}
+	
+	public void stopTimer() throws InterruptedException {
+		if (timer.isPresent()){
+			timer.get().interrupt();
+			timer.get().join();
+		}
+		timer = Optional.empty();
 	}
 
-	public void countDown(int value) {
-		try {
-			Thread.sleep(value);
-		} catch (InterruptedException e) {
-			return;
-		}
-	}
 
 	public void run() {
 		while (true) {

@@ -9,7 +9,7 @@ public class DoorOpenState implements ElevatorState {
 	public void advance(Elevator elevator) throws InterruptedException {
 		Logger.debugln("Closing doors");
 
-		elevator.timeEvent(ElevatorStatus.DoorOpen);
+		elevator.startTimer(ElevatorStatus.DoorOpen);
 
 		Thread.sleep(elevator.getDOOR_CLOSING_TIME());
 
