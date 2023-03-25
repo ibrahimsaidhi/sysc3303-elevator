@@ -200,6 +200,37 @@ public class Elevator implements Runnable {
 			this.setState(new StuckState(this));
 		}
 	}
+	
+	public void timeEvent(ElevatorStatus status) {
+		Thread timer = new Thread(() -> {
+			if (status.equals(ElevatorStatus.DoorOpen)) {
+
+				countDown(DOOR_CLOSING_TIME);
+				if (state.getClass().equals(DoorClosedState.class)) {
+					return;
+				}
+				setdoorStuck(true);
+
+			} else if (status.equals(ElevatorStatus.Moving)) {
+				int previousFloor = destionationQueue.getCurrentFloor();
+				countDown(TIME_BTW_FLOORS);
+				if (previousFloor == destionationQueue.getCurrentFloor()) {
+					setstuckBtwFloors(stuckBtwFloors);
+				}
+			}
+
+		});
+		timer.start();
+	}
+	
+	public void countDown(int value) {
+  	  try {
+			Thread.sleep(value);
+		} catch (InterruptedException e) {
+			return;
+		}
+	}
+
 
 
 	public void run() {
