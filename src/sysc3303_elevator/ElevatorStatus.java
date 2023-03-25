@@ -6,4 +6,7 @@ public enum ElevatorStatus {
     Moving,
     DoorOpen,
     DoorClose,
+    DoorStuck,
+    StuckBtwFloors,
+    ShutDown,
 }

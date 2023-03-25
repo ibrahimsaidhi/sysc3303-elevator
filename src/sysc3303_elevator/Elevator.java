@@ -21,6 +21,9 @@ public class Elevator implements Runnable {
 	private ElevatorState state;
 	private ElevatorStatus status;
 	private List<ElevatorObserver> observers;
+	private boolean stuckBtwFloors;
+	private boolean doorStuck;
+
 
 	/**
 	 * Constructor for Elevator Class
@@ -38,6 +41,8 @@ public class Elevator implements Runnable {
 
 		this.state = new ElevatorInitState(this);
 		this.observers = new ArrayList<>();
+		this.stuckBtwFloors = false;
+		this.doorStuck = false;
 	}
 
 	public boolean isMotorOn() {
@@ -111,6 +116,22 @@ public class Elevator implements Runnable {
 
 	public ElevatorStatus getStatus() {
 		return status;
+	}
+	
+	public synchronized boolean isstuckBtwFloors() {
+	    return stuckBtwFloors;
+	}
+
+	public synchronized void setstuckBtwFloors(boolean stuckBtwFloors) {
+	    this.stuckBtwFloors = stuckBtwFloors;
+	}
+	
+	public synchronized boolean isdoorStuck() {
+	    return doorStuck;
+	}
+
+	public synchronized void setdoorStuck(boolean doorStuck) {
+	    this.doorStuck = doorStuck;
 	}
 
 	/**
