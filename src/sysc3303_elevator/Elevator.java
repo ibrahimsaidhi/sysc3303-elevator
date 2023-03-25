@@ -23,9 +23,9 @@ public class Elevator implements Runnable {
 	private List<ElevatorObserver> observers;
 	private boolean stuckBtwFloors;
 	private boolean doorStuck;
-	private final int TIME_BTW_FLOORS = 100; //milliseconds
-	private final int DOOR_CLOSING_TIME = 100; //milliseconds
-	private final int THRESHOLD = 120; //maximum time for moving between floors or closing door in milliseconds
+	private final int TIME_BTW_FLOORS = 1000; //milliseconds
+	private final int DOOR_CLOSING_TIME = 1000; //milliseconds
+	private final int THRESHOLD = 1100; //maximum time for moving between floors or closing door in milliseconds
 
 
 	/**
@@ -168,26 +168,30 @@ public class Elevator implements Runnable {
 	 * @author Tao Lufula, 101164153
 	 */
 	public void processFloorEvent(FloorEvent event) {
-		var queue = this.getDestinationFloors();
-		int destFloor = event.destFloor();
-		int srcFloor = event.srcFloor();
-
-		if (destFloor != 0 && srcFloor != destFloor) {
-			queue.add(srcFloor);
-			queue.add(destFloor);
-			this.getButtonLampStates()[destFloor] = ButtonLampState.ON;
-
-			if (queue.getCurrentFloor() != queue.peek().get()) {
-				this.setState(new MovingState(this));
+		if(!isstuckBtwFloors()) {
+			var queue = this.getDestinationFloors();
+			int destFloor = event.destFloor();
+			int srcFloor = event.srcFloor();
+	
+			if (destFloor != 0 && srcFloor != destFloor) {
+				queue.add(srcFloor);
+				queue.add(destFloor);
+				this.getButtonLampStates()[destFloor] = ButtonLampState.ON;
+	
+				if (queue.getCurrentFloor() != queue.peek().get()) {
+					this.setState(new MovingState(this));
+				} else {
+					queue.next();
+					Logger.debugln("Opening doors");
+					this.setDoorState(DoorState.OPEN);
+					this.setState(new DoorOpenState(this));
+				}
+	
 			} else {
-				queue.next();
-				Logger.debugln("Opening doors");
-				this.setDoorState(DoorState.OPEN);
-				this.setState(new DoorOpenState(this));
+				Logger.println("Invalid floor event");
 			}
-
-		} else {
-			Logger.println("Invalid floor event");
+		}else {
+			Logger.debugln("Cannot process floor Events, Elevator is shutDown");
 		}
 	}
 	
