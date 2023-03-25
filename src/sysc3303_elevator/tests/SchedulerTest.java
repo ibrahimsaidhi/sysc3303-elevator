@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import sysc3303_elevator.Direction;
 import sysc3303_elevator.ElevatorResponse;
 import sysc3303_elevator.ElevatorStatus;
 import sysc3303_elevator.FloorEvent;
@@ -16,10 +17,10 @@ class SchedulerTest {
 
 	@Test
 	void test() throws Throwable {
-		var event1 = new FloorEvent(null, 0, null, 0);
-		var event2 = new FloorEvent(null, 1, null, 0);
-		var msg1 = new ElevatorResponse(1, ElevatorStatus.Idle);
-		var msg2 = new ElevatorResponse(4, ElevatorStatus.Idle);
+		var event1 = new FloorEvent(null, 0, Direction.Down, 0);
+		var event2 = new FloorEvent(null, 1, Direction.Down, 0);
+		var msg1 = new ElevatorResponse(1, ElevatorStatus.Idle, Direction.Down);
+		var msg2 = new ElevatorResponse(4, ElevatorStatus.Idle, Direction.Down);
 
 		var elevatorMux = new BlockingMultiplexer<Integer, FloorEvent, ElevatorResponse>() {
 			public int count = 0;

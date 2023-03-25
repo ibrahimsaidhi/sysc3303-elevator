@@ -1,26 +1,30 @@
 package sysc3303_elevator;
 
 public class DoorClosedState implements ElevatorState {
+	public DoorClosedState(Elevator elevator) {
+		elevator.setStatus(ElevatorStatus.DoorClose);
+	}
+
 	@Override
 	public void advance(Elevator elevator) {
-		if (elevator.getDestinationFloors().isEmpty()) {
-			elevator.setState(new IdleState());
+		var queue = elevator.getDestinationFloors();
+		if (queue.peek().isEmpty()) {
+			elevator.setState(new IdleState(elevator));
 
-			var response = new ElevatorResponse(elevator.getCurrentFloor(), ElevatorStatus.Idle);
+			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 			elevator.notifyObservers(response);
 			return;
 		}
-		if (elevator.getCurrentFloor() != elevator.getDestinationFloors().get(0)) {
-			elevator.setState(new MovingState());
-			var direction = elevator.getDirection();
-			var response = new ElevatorResponse(elevator.getCurrentFloor(), direction.equals(Direction.Up) ? ElevatorStatus.Up : ElevatorStatus.Down);
+		if (queue.getCurrentFloor() != queue.peek().get()) {
+			elevator.setState(new MovingState(elevator));
+			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 			elevator.notifyObservers(response);
 		} else {
-			elevator.getButtonLampStates()[elevator.getDestinationFloors().get(0)] = ButtonLampState.OFF;
+			elevator.getButtonLampStates()[queue.peek().get()] = ButtonLampState.OFF;
 			Logger.debugln("Opening doors");
 			elevator.setDoorState(DoorState.OPEN);
-			elevator.getDestinationFloors().remove(0);
-			elevator.setState(new DoorOpenState());
+			queue.next();
+			elevator.setState(new DoorOpenState(elevator));
 		}
 	}
 }
