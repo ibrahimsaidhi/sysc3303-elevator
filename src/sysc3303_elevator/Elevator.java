@@ -23,6 +23,9 @@ public class Elevator implements Runnable {
 	private List<ElevatorObserver> observers;
 	private boolean stuckBtwFloors;
 	private boolean doorStuck;
+	private final int TIME_BTW_FLOORS = 100; //milliseconds
+	private final int DOOR_CLOSING_TIME = 100; //milliseconds
+	private final int THRESHOLD = 120; //maximum time for moving between floors or closing door in milliseconds
 
 
 	/**
@@ -133,6 +136,27 @@ public class Elevator implements Runnable {
 	public synchronized void setdoorStuck(boolean doorStuck) {
 	    this.doorStuck = doorStuck;
 	}
+	
+	/**
+	 * @return the tIME_BTW_FLOORS
+	 */
+	public int getTIME_BTW_FLOORS() {
+		return TIME_BTW_FLOORS;
+	}
+	
+	/**
+	 * @return the DOOR_CLOSING_TIME
+	 */
+	public int getDOOR_CLOSING_TIME() {
+		return DOOR_CLOSING_TIME;
+	}
+	
+	/**
+	 * @return the THRESHOLD
+	 */
+	public int getTHRESHOLD() {
+		return THRESHOLD;
+	}
 
 	/**
 	 * method to process events from elevator subsystem and return a complete
@@ -166,6 +190,13 @@ public class Elevator implements Runnable {
 			Logger.println("Invalid floor event");
 		}
 	}
+	
+	public void checkAndDealWIthFaults() {
+		if(isdoorStuck() || isstuckBtwFloors()) {
+			this.setState(new StuckState(this));
+		}
+	}
+
 
 	public void run() {
 		while (true) {
@@ -177,5 +208,6 @@ public class Elevator implements Runnable {
 			}
 		}
 	}
+
 
 }

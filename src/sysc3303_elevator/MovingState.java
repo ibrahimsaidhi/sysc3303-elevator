@@ -18,9 +18,14 @@ public class MovingState implements ElevatorState {
 		while (queue.getCurrentFloor() != destinationFloor) {
 			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 			elevator.notifyObservers(response);
-			Thread.sleep(1000);
+			
+			
+			
+			Thread.sleep(elevator.getTIME_BTW_FLOORS());
 			queue.advance();
 			Logger.println("Floor: " + queue.getCurrentFloor());
+			
+			elevator.checkAndDealWIthFaults();
 		}
 		var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 		elevator.notifyObservers(response);
