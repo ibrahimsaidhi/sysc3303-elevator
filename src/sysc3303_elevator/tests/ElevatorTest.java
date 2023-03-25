@@ -13,6 +13,8 @@ import sysc3303_elevator.ElevatorResponse;
 import sysc3303_elevator.ElevatorSubsystem;
 import sysc3303_elevator.FloorEvent;
 import sysc3303_elevator.MovingState;
+import sysc3303_elevator.ShutDownState;
+import sysc3303_elevator.StuckState;
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
 
@@ -105,8 +107,56 @@ class ElevatorTest {
 
         assertEquals(elevator.getButtonLampStates()[5], ButtonLampState.OFF);
         assertEquals(elevator.getState().getClass(), DoorOpenState.class);
+        
+        elevator.getState().advance(elevator);
+        
         assertEquals(elevator.getDestinationFloors().getCurrentFloor(), Integer.valueOf(5));
         assertTrue(elevator.getDestinationFloors().peek().isEmpty());
+    }
+	
+	@Test
+    public void testFaults() throws InterruptedException {
+
+		var event1 = new FloorEvent(null, 2, Direction.Up, 6);
+
+        Elevator elevator = new Elevator(10);
+        assertEquals(elevator.getDestinationFloors().getCurrentFloor(), Integer.valueOf(1));
+
+        elevator.processFloorEvent(event1);
+
+		assertArrayEquals(new Integer[] {
+			2,
+			6,
+		}, elevator.getDestinationFloors().getQueue().toArray());
+		
+        assertEquals(elevator.getButtonLampStates()[6], ButtonLampState.ON);
+		assertEquals(elevator.getState().getClass(), MovingState.class);
+        
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getDestinationFloors().getCurrentFloor(), Integer.valueOf(2));
+        assertEquals(elevator.getState().getClass(), DoorOpenState.class);
+        
+        elevator.setdoorStuck(true); //trigger fault - door stuck open
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getState().getClass(), StuckState.class);
+        
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getState().getClass(), DoorClosedState.class);
+        
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getState().getClass(), MovingState.class);
+        
+        
+        elevator.setstuckBtwFloors(true); //trigger fault - door stuck between floors
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getState().getClass(), StuckState.class);
+        
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getState().getClass(), ShutDownState.class);
+        
+        elevator.getState().advance(elevator);
+        assertEquals(elevator.getState().getClass(), ShutDownState.class); //State will not change as elevator is shutdown
+        
     }
 
 }
