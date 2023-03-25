@@ -65,9 +65,11 @@ public class Main {
             return Optional.of(new FileInputStream(FILE_PATH));
         } catch (FileNotFoundException ex) { 
             ex.printStackTrace();
-            return Optional.empty();
+            
+            return Optional.of(new ByteArrayInputStream( //hard coded floor events incase something goes wrong 
+                    "14:05:15.0 2 up 4\n14:05:16.0 1 up 3\n14:05:17.0 3 down 2\n14:05:18.0 2 up 3".getBytes()));
+            }
         }
-    }
 	public static void main(String[] args) throws SocketException, UnknownHostException, InterruptedException {
 		
         Optional<InputStream> fileStream = readFile();
