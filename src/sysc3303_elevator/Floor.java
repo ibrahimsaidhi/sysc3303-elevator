@@ -50,7 +50,7 @@ public class Floor implements Runnable {
 	 * @param floorevent
 	 */
 	public void floorToScheduler(FloorEvent floorevent) {
-		if(validateRequest(floorevent.direction(), floorevent.carButton(), floorevent.floor())) {
+		if(validateRequest(floorevent.direction(), floorevent.destFloor(), floorevent.srcFloor())) {
 			try {
 				Logger.println(String.format("Requesting elevator '%s'", floorevent.toString()));
 				floorToScheduler.put(floorevent);

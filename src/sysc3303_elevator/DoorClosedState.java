@@ -11,13 +11,13 @@ public class DoorClosedState implements ElevatorState {
 		if (queue.peek().isEmpty()) {
 			elevator.setState(new IdleState(elevator));
 
-			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus());
+			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 			elevator.notifyObservers(response);
 			return;
 		}
 		if (queue.getCurrentFloor() != queue.peek().get()) {
 			elevator.setState(new MovingState(elevator));
-			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus());
+			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 			elevator.notifyObservers(response);
 		} else {
 			elevator.getButtonLampStates()[queue.peek().get()] = ButtonLampState.OFF;

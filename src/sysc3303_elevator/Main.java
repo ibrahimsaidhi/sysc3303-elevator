@@ -63,7 +63,7 @@ public class Main {
 
 		Optional<InputStream> fileStream = Optional.empty();
 		fileStream = Optional.of(new ByteArrayInputStream(
-				"14:05:15.0 2 up 4\n14:05:16.0 1 up 3\n14:05:17.0 3 down 2\n14:05:18.0 2 up 3".getBytes()));
+				"14:05:15.0 2 up 4\n14:05:16.0 3 up 4\n14:05:17.0 3 down 2\n14:05:18.0 2 up 3".getBytes()));
 		try {
 			if (fileStream.isEmpty()) {
 				fileStream = Optional.of(new FileInputStream(args[0]));
