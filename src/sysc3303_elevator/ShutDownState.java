@@ -3,6 +3,9 @@ package sysc3303_elevator;
 public class ShutDownState implements ElevatorState{
 
 	public ShutDownState(Elevator elevator) {
+		
+		Logger.println("ALERT!!! Elevator shutdown");
+		
 		elevator.setStatus(ElevatorStatus.ShutDown);
 	}
 
