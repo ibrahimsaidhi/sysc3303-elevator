@@ -23,10 +23,11 @@ public class Elevator implements Runnable {
 	private List<ElevatorObserver> observers;
 	private boolean stuckBtwFloors;
 	private boolean doorStuck;
-	private final int TIME_BTW_FLOORS = 1000; //milliseconds
-	private final int DOOR_CLOSING_TIME = 1000; //milliseconds
-	private final int THRESHOLD = 1100; //maximum time for moving between floors or closing door in milliseconds
-
+	private final int TIME_BTW_FLOORS = 1000; // milliseconds
+	private final int DOOR_CLOSING_TIME = 1000; // milliseconds
+	private final int TIME_BTW_FLOORS_THRESHOLD = 1200; // maximum time for moving between floors or closing door in
+															// milliseconds
+	private final int DOOR_CLOSING_TIME_THRESHOLD = 1200;
 
 	/**
 	 * Constructor for Elevator Class
@@ -120,42 +121,35 @@ public class Elevator implements Runnable {
 	public ElevatorStatus getStatus() {
 		return status;
 	}
-	
+
 	public synchronized boolean isstuckBtwFloors() {
-	    return stuckBtwFloors;
+		return stuckBtwFloors;
 	}
 
 	public synchronized void setstuckBtwFloors(boolean stuckBtwFloors) {
-	    this.stuckBtwFloors = stuckBtwFloors;
+		this.stuckBtwFloors = stuckBtwFloors;
 	}
-	
+
 	public synchronized boolean isdoorStuck() {
-	    return doorStuck;
+		return doorStuck;
 	}
 
 	public synchronized void setdoorStuck(boolean doorStuck) {
-	    this.doorStuck = doorStuck;
+		this.doorStuck = doorStuck;
 	}
-	
+
 	/**
 	 * @return the tIME_BTW_FLOORS
 	 */
 	public int getTIME_BTW_FLOORS() {
 		return TIME_BTW_FLOORS;
 	}
-	
+
 	/**
 	 * @return the DOOR_CLOSING_TIME
 	 */
 	public int getDOOR_CLOSING_TIME() {
 		return DOOR_CLOSING_TIME;
-	}
-	
-	/**
-	 * @return the THRESHOLD
-	 */
-	public int getTHRESHOLD() {
-		return THRESHOLD;
 	}
 
 	/**
@@ -168,16 +162,16 @@ public class Elevator implements Runnable {
 	 * @author Tao Lufula, 101164153
 	 */
 	public void processFloorEvent(FloorEvent event) {
-		if(!isstuckBtwFloors()) {
+		if (!isstuckBtwFloors()) {
 			var queue = this.getDestinationFloors();
 			int destFloor = event.destFloor();
 			int srcFloor = event.srcFloor();
-	
+
 			if (destFloor != 0 && srcFloor != destFloor) {
 				queue.add(srcFloor);
 				queue.add(destFloor);
 				this.getButtonLampStates()[destFloor] = ButtonLampState.ON;
-	
+
 				if (queue.getCurrentFloor() != queue.peek().get()) {
 					this.setState(new MovingState(this));
 				} else {
@@ -186,52 +180,55 @@ public class Elevator implements Runnable {
 					this.setDoorState(DoorState.OPEN);
 					this.setState(new DoorOpenState(this));
 				}
-	
+
 			} else {
 				Logger.println("Invalid floor event");
 			}
-		}else {
+		} else {
 			Logger.debugln("Cannot process floor Events, Elevator is shutDown");
 		}
 	}
-	
-	public void checkAndDealWIthFaults() {
-		if(isdoorStuck() || isstuckBtwFloors()) {
-			this.setState(new StuckState(this));
+
+	public Boolean checkAndDealWIthFaults() {
+		if (isdoorStuck() || isstuckBtwFloors()) {
+			setState(new StuckState(this));
+			return true;
 		}
+		return false;
 	}
-	
+
 	public void timeEvent(ElevatorStatus status) {
 		Thread timer = new Thread(() -> {
-			if (status.equals(ElevatorStatus.DoorOpen)) {
+			int previousFloor = destionationQueue.getCurrentFloor();
 
-				countDown(DOOR_CLOSING_TIME);
+			if (status.equals(ElevatorStatus.DoorOpen)) {
+				countDown(DOOR_CLOSING_TIME_THRESHOLD);
 				if (state.getClass().equals(DoorClosedState.class)) {
 					return;
 				}
 				setdoorStuck(true);
 
 			} else if (status.equals(ElevatorStatus.Moving)) {
-				int previousFloor = destionationQueue.getCurrentFloor();
-				countDown(TIME_BTW_FLOORS);
+				countDown(TIME_BTW_FLOORS_THRESHOLD);
 				if (previousFloor == destionationQueue.getCurrentFloor()) {
-					setstuckBtwFloors(stuckBtwFloors);
+					setstuckBtwFloors(true);
 				}
+			} else {
+
+				return; // add more actions
 			}
 
 		});
 		timer.start();
 	}
-	
+
 	public void countDown(int value) {
-  	  try {
+		try {
 			Thread.sleep(value);
 		} catch (InterruptedException e) {
 			return;
 		}
 	}
-
-
 
 	public void run() {
 		while (true) {
@@ -243,6 +240,5 @@ public class Elevator implements Runnable {
 			}
 		}
 	}
-
 
 }

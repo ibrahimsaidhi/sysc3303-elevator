@@ -6,8 +6,16 @@ public class DoorOpenState implements ElevatorState {
 	}
 
 	@Override
-	public void advance(Elevator elevator) {
+	public void advance(Elevator elevator) throws InterruptedException {
 		Logger.debugln("Closing doors");
+
+		elevator.timeEvent(ElevatorStatus.DoorOpen);
+
+		Thread.sleep(elevator.getDOOR_CLOSING_TIME());
+
+		if (elevator.checkAndDealWIthFaults()) {
+			return;
+		}
 		elevator.setDoorState(DoorState.CLOSED);
 
 		elevator.setState(new DoorClosedState(elevator));

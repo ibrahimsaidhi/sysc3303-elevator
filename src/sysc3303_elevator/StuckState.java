@@ -15,8 +15,9 @@ public class StuckState implements ElevatorState{
 	@Override
 	public void advance(Elevator elevator) throws InterruptedException {		
 		if(elevator.isdoorStuck()) {
-			elevator.setState(new DoorClosedState(elevator));
 			elevator.setdoorStuck(false);
+			elevator.setState(new DoorClosedState(elevator));
+			return;
 		}else {
 			elevator.setState(new ShutDownState(elevator));
 		}
