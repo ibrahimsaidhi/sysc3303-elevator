@@ -147,7 +147,7 @@ class ElevatorTest {
         assertEquals(elevator.getState().getClass(), MovingState.class);
         
         
-        elevator.setstuckBtwFloors(true); //trigger fault - door stuck between floors
+        elevator.setstuckBtwFloors(true); //trigger fault - elevator stuck between floors
         elevator.getState().advance(elevator);
         assertEquals(elevator.getState().getClass(), StuckState.class);
         
