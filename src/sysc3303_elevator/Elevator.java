@@ -1,5 +1,6 @@
 package sysc3303_elevator;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -127,6 +128,7 @@ public class Elevator implements Runnable {
 	 * @author Tao Lufula, 101164153
 	 */
 	public void processFloorEvent(FloorEvent event) {
+		
 		synchronized (this.destinationFloors) {
 
 			int carButton = event.carButton();
@@ -188,7 +190,7 @@ public class Elevator implements Runnable {
 				}
 
 			} else {
-				Logger.println("Invalid floor event");
+				Logger.println("Elevator Shut DOWN");
 			}
 		}
 	}

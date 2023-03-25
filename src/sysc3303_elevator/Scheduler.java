@@ -3,6 +3,7 @@
  */
 package sysc3303_elevator;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
@@ -54,6 +55,19 @@ public class Scheduler<I, R> implements Runnable {
 							// No longer know the status of the elevator
 							this.elevatorStateCache.remove(channelId);
 
+							foundElement = true;
+							break;
+						}
+						else if (elevatorInfo.state().equals(ElevatorStatus.failed)) {
+							Logger.println("Current Elevator has failed to reach floor on time. Shutting down....");
+							LocalTime time = LocalTime.MIDNIGHT;
+							FloorEvent failSignalEvent = new FloorEvent(time,0,Direction.Up,0);
+							this.elevatorMux
+								.put(new TaggedMsg<I, FloorEvent>(channelId, failSignalEvent));
+
+							// No longer know the status of the elevator
+							this.elevatorStateCache.remove(channelId);
+		
 							foundElement = true;
 							break;
 						}
