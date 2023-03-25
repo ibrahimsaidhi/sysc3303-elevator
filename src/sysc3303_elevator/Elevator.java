@@ -191,7 +191,7 @@ public class Elevator implements Runnable {
 		}
 	}
 
-	public Boolean checkAndDealWIthFaults() {
+	public Boolean checkAndDealWithFaults() {
 		if (isdoorStuck() || isstuckBtwFloors()) {
 			setState(new StuckState(this));
 			return true;

@@ -13,7 +13,7 @@ public class DoorOpenState implements ElevatorState {
 
 		Thread.sleep(elevator.getDOOR_CLOSING_TIME());
 
-		if (elevator.checkAndDealWIthFaults()) {
+		if (elevator.checkAndDealWithFaults()) {
 			return;
 		}
 		elevator.setDoorState(DoorState.CLOSED);

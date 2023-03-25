@@ -95,7 +95,7 @@ class ElevatorTest {
 		}, elevator.getDestinationFloors().getQueue().toArray());
 
         elevator.getState().advance(elevator);
-        // assertEquals(elevator.getButtonLampStates()[5], ButtonLampState.ON);
+        assertEquals(elevator.getButtonLampStates()[5], ButtonLampState.OFF);
         assertEquals(elevator.getState().getClass(), DoorClosedState.class);
 
         elevator.getState().advance(elevator);

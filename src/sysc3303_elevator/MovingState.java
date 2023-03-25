@@ -27,7 +27,7 @@ public class MovingState implements ElevatorState {
 			
 			//TODO Kill timer
 			
-			if(elevator.checkAndDealWIthFaults()) {
+			if(elevator.checkAndDealWithFaults()) {
 				return;
 			};
 			
