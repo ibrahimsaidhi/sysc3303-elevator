@@ -24,9 +24,7 @@ public class MovingState implements ElevatorState {
 			Thread.sleep(elevator.getTIME_BTW_FLOORS());
 			queue.advance();
 			Logger.println("Floor: " + queue.getCurrentFloor());
-			
-			//TODO Kill timer
-			
+						
 			if(elevator.checkAndDealWithFaults()) {
 				return;
 			};
