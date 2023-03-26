@@ -3,6 +3,8 @@ package sysc3303_elevator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.Timer;
 
 /**
  * Elevator Class
@@ -21,6 +23,13 @@ public class Elevator implements Runnable {
 	private ElevatorState state;
 	private ElevatorStatus status;
 	private List<ElevatorObserver> observers;
+	private boolean stuckBtwFloors;
+	private boolean doorStuck;
+	private final int TIME_BTW_FLOORS = 1000; // milliseconds
+	private final int DOOR_CLOSING_TIME = 1000; // milliseconds
+	private final int TIME_BTW_FLOORS_THRESHOLD = 1200; // maximum time for moving between floors or closing door in
+	private final int DOOR_CLOSING_TIME_THRESHOLD = 1200;
+	private Optional<Thread> timer = Optional.empty();	
 
 	/**
 	 * Constructor for Elevator Class
@@ -38,6 +47,8 @@ public class Elevator implements Runnable {
 
 		this.state = new ElevatorInitState(this);
 		this.observers = new ArrayList<>();
+		this.stuckBtwFloors = false;
+		this.doorStuck = false;
 	}
 
 	public boolean isMotorOn() {
@@ -113,6 +124,36 @@ public class Elevator implements Runnable {
 		return status;
 	}
 
+	public synchronized boolean isstuckBtwFloors() {
+		return stuckBtwFloors;
+	}
+
+	public synchronized void setstuckBtwFloors(boolean stuckBtwFloors) {
+		this.stuckBtwFloors = stuckBtwFloors;
+	}
+
+	public synchronized boolean isdoorStuck() {
+		return doorStuck;
+	}
+
+	public synchronized void setdoorStuck(boolean doorStuck) {
+		this.doorStuck = doorStuck;
+	}
+
+	/**
+	 * @return the tIME_BTW_FLOORS
+	 */
+	public int getTIME_BTW_FLOORS() {
+		return TIME_BTW_FLOORS;
+	}
+
+	/**
+	 * @return the DOOR_CLOSING_TIME
+	 */
+	public int getDOOR_CLOSING_TIME() {
+		return DOOR_CLOSING_TIME;
+	}
+
 	/**
 	 * method to process events from elevator subsystem and return a complete
 	 * message
@@ -123,28 +164,79 @@ public class Elevator implements Runnable {
 	 * @author Tao Lufula, 101164153
 	 */
 	public void processFloorEvent(FloorEvent event) {
-		var queue = this.getDestinationFloors();
-		int destFloor = event.destFloor();
-		int srcFloor = event.srcFloor();
+		if (!isstuckBtwFloors()) {
+			var queue = this.getDestinationFloors();
+			int destFloor = event.destFloor();
+			int srcFloor = event.srcFloor();
 
-		if (destFloor != 0 && srcFloor != destFloor) {
-			queue.add(srcFloor);
-			queue.add(destFloor);
-			this.getButtonLampStates()[destFloor] = ButtonLampState.ON;
+			if (destFloor != 0 && srcFloor != destFloor) {
+				queue.add(srcFloor);
+				queue.add(destFloor);
+				this.getButtonLampStates()[destFloor] = ButtonLampState.ON;
 
-			if (queue.getCurrentFloor() != queue.peek().get()) {
-				this.setState(new MovingState(this));
+				if (queue.getCurrentFloor() != queue.peek().get()) {
+					this.setState(new MovingState(this));
+				} else {
+					queue.next();
+					Logger.debugln("Opening doors");
+					this.setDoorState(DoorState.OPEN);
+					this.setState(new DoorOpenState(this));
+				}
+
 			} else {
-				queue.next();
-				Logger.debugln("Opening doors");
-				this.setDoorState(DoorState.OPEN);
-				this.setState(new DoorOpenState(this));
+				Logger.println("Invalid floor event");
 			}
-
 		} else {
-			Logger.println("Invalid floor event");
+			Logger.debugln("Cannot process floor Events, Elevator is shutDown");
 		}
 	}
+
+	public Boolean checkAndDealWithFaults() {
+		if (isdoorStuck() || isstuckBtwFloors()) {
+			setState(new StuckState(this));
+			return true;
+		}
+		return false;
+	}
+
+	public void startTimer(ElevatorStatus status) throws InterruptedException {
+		stopTimer();
+		timer = Optional.of(new Thread(() -> {
+			try {
+				int previousFloor = destionationQueue.getCurrentFloor();
+	
+				if (status.equals(ElevatorStatus.DoorOpen)) {
+					Thread.sleep(DOOR_CLOSING_TIME_THRESHOLD);
+					if (state.getClass().equals(DoorClosedState.class)) {
+						return;
+					}
+					setdoorStuck(true);
+	
+				} else if (status.equals(ElevatorStatus.Moving)) {
+					Thread.sleep(TIME_BTW_FLOORS_THRESHOLD);
+					if (previousFloor == destionationQueue.getCurrentFloor()) {
+						setstuckBtwFloors(true);
+					}
+				} else {
+	
+					return; // add more actions
+				}
+			}catch (InterruptedException e) {
+				return;
+			}
+
+		}));
+		timer.get().start();
+	}
+	
+	public void stopTimer() throws InterruptedException {
+		if (timer.isPresent()){
+			timer.get().interrupt();
+			timer.get().join();
+		}
+		timer = Optional.empty();
+	}
+
 
 	public void run() {
 		while (true) {

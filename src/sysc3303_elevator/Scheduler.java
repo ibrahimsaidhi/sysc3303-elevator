@@ -52,25 +52,28 @@ public class Scheduler<I, R> implements Runnable {
 					var elevatorInfo = entry.getValue();
 
 					// Elevators that are going up should be sent requests that go down
-					if (elevatorInfo.state().equals(ElevatorStatus.Idle)
-							|| elevatorInfo.direction().equals(Direction.Down)) {
-						Logger.debugln("Ignored");
-						continue;
-					}
+					if (!elevatorInfo.state().equals(ElevatorStatus.ShutDown)) {
+						if (elevatorInfo.state().equals(ElevatorStatus.Idle)
+								|| elevatorInfo.direction().equals(Direction.Down)) {
+							Logger.debugln("Ignored");
+							continue;
+						}
 
-					Logger.debugln("Step 1");
-					if (upRequest.srcFloor() > elevatorInfo.currentFloor()) {
-						Logger.debugln("Step 2");
-						if (closestEntry.isPresent()) {
-							Logger.debugln("Step 3");
-							var previous = closestEntry.get();
-							if (previous.second().currentFloor() > elevatorInfo.currentFloor()) {
+						Logger.debugln("Step 1");
+						if (upRequest.srcFloor() > elevatorInfo.currentFloor()) {
+							Logger.debugln("Step 2");
+							if (closestEntry.isPresent()) {
+								Logger.debugln("Step 3");
+								var previous = closestEntry.get();
+								if (previous.second().currentFloor() > elevatorInfo.currentFloor()) {
+									closestEntry = Optional.of(new Pair<>(channelId, elevatorInfo));
+								}
+							} else {
 								closestEntry = Optional.of(new Pair<>(channelId, elevatorInfo));
 							}
-						} else {
-							closestEntry = Optional.of(new Pair<>(channelId, elevatorInfo));
 						}
 					}
+					
 				}
 
 				if (closestEntry.isPresent()) {
@@ -105,23 +108,25 @@ public class Scheduler<I, R> implements Runnable {
 					var elevatorInfo = entry.getValue();
 
 					// Elevators that are going up should be sent requests that go down
-					if (elevatorInfo.state().equals(ElevatorStatus.Idle)
-							|| elevatorInfo.direction().equals(Direction.Up)) {
-						Logger.debugln("Ignored");
-						continue;
-					}
-
-					Logger.debugln("Step 1");
-					if (downRequest.srcFloor() < elevatorInfo.currentFloor()) {
-						Logger.debugln("Step 2");
-						if (closestEntry.isPresent()) {
-							Logger.debugln("Step 3");
-							var previous = closestEntry.get();
-							if (previous.second().currentFloor() < elevatorInfo.currentFloor()) {
+					if (!elevatorInfo.state().equals(ElevatorStatus.ShutDown)) {
+						if (elevatorInfo.state().equals(ElevatorStatus.Idle)
+								|| elevatorInfo.direction().equals(Direction.Up)) {
+							Logger.debugln("Ignored");
+							continue;
+						}
+	
+						Logger.debugln("Step 1");
+						if (downRequest.srcFloor() < elevatorInfo.currentFloor()) {
+							Logger.debugln("Step 2");
+							if (closestEntry.isPresent()) {
+								Logger.debugln("Step 3");
+								var previous = closestEntry.get();
+								if (previous.second().currentFloor() < elevatorInfo.currentFloor()) {
+									closestEntry = Optional.of(new Pair<>(channelId, elevatorInfo));
+								}
+							} else {
 								closestEntry = Optional.of(new Pair<>(channelId, elevatorInfo));
 							}
-						} else {
-							closestEntry = Optional.of(new Pair<>(channelId, elevatorInfo));
 						}
 					}
 				}
@@ -155,18 +160,20 @@ public class Scheduler<I, R> implements Runnable {
 					var channelId = entry.getKey();
 					var elevatorInfo = entry.getValue();
 					Logger.debugln("Entry " + channelId + " " + elevatorInfo);
-					if (elevatorInfo.state().equals(ElevatorStatus.Idle)) {
-						// Found idle elevator. Send request!
-						Logger.println("Goto:  Sending to " + channelId + " with state " + elevatorInfo.toString());
-
-						this.elevatorMux
-								.put(new TaggedMsg<I, FloorEvent>(channelId, this.requestQueue.remove(0)));
-
-						// No longer know the status of the elevator
-						this.elevatorStateCache.remove(channelId);
-
-						foundElement = true;
-						break;
+					if (!elevatorInfo.state().equals(ElevatorStatus.ShutDown)) {
+						if (elevatorInfo.state().equals(ElevatorStatus.Idle)) {
+							// Found idle elevator. Send request!
+							Logger.println("Goto:  Sending to " + channelId + " with state " + elevatorInfo.toString());
+	
+							this.elevatorMux
+									.put(new TaggedMsg<I, FloorEvent>(channelId, this.requestQueue.remove(0)));
+	
+							// No longer know the status of the elevator
+							this.elevatorStateCache.remove(channelId);
+	
+							foundElement = true;
+							break;
+						}
 					}
 				}
 
