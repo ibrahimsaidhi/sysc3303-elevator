@@ -201,8 +201,13 @@ public class Elevator implements Runnable {
 
 	public Boolean checkAndDealWithFaults() {
 		if (isdoorStuck() || isstuckBtwFloors()) {
-			setState(new StuckState(this));
+			
+			var queue = this.getDestinationFloors();
+			this.setState(new StuckState(this));
+			var response = new ElevatorResponse(queue.getCurrentFloor(), this.getStatus(), this.getDirection());
+			notifyObservers(response);
 			return true;
+			
 		}
 		return false;
 	}
