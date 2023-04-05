@@ -11,7 +11,7 @@ public class DoorOpenState implements ElevatorState {
 
 		elevator.startTimer(ElevatorStatus.DoorOpen);
 
-		Thread.sleep(elevator.getDOOR_CLOSING_TIME());
+		Thread.sleep(elevator.getDOOR_OPENNING_CLOSING_TIME());
 
 		if (elevator.checkAndDealWithFaults()) {
 			return;
