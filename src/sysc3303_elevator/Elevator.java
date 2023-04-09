@@ -178,8 +178,7 @@ public class Elevator implements Runnable {
 			int srcFloor = event.srcFloor();
 
 			if (destFloor != 0 && srcFloor != destFloor) {
-				queue.add(srcFloor);
-				queue.add(destFloor);
+				queue.add(srcFloor, destFloor);
 				this.getButtonLampStates()[destFloor] = ButtonLampState.ON;
 
 				if (queue.getCurrentFloor() != queue.peek().get()) {
