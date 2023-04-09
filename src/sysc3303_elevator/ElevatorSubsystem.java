@@ -1,6 +1,8 @@
 package sysc3303_elevator;
 
 
+import java.util.*;
+
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
 
@@ -19,6 +21,7 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	private Elevator elevator;
 	private Thread elevatorThread;
 	int elevatorFloors;
+
 
 	/**
 	 * Constructor for Elevator Class
@@ -39,6 +42,8 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 		this.elevatorThread = new Thread(this.elevator, "elevator_state_" + elevatorId);
 	}
 
+
+	
 	@Override
 	public void run() {
 		Logger.debugln("Elevator subsystem init");

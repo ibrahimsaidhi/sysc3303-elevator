@@ -29,7 +29,7 @@ public class Main {
 				elevatorPort);
 
 		var es1 = new ElevatorSubsystem(5, elevatorId, elevatorClient1.getReceiver(), elevatorClient1.getSender());
-
+		
 		return ThreadHelper.runThreads("elevator_prog", new Thread[] {
 				new Thread(elevatorClient1, "elev_c_" + elevatorId),
 				new Thread(es1, "elevator_syst__" + elevatorId)
@@ -42,7 +42,7 @@ public class Main {
 		var elevatorServer = new UdpServerQueue<FloorEvent, ElevatorResponse>(elevatorPort);
 
 		var s1 = new Scheduler<UdpClientIdentifier, UdpClientIdentifier>(elevatorServer, floorServer);
-
+		View view = new View(s1);
 		return ThreadHelper.runThreads("scheduler_prog", new Thread[] {
 				new Thread(s1, "scheduler_1"),
 				new Thread(floorServer, "floor_serv"),
@@ -83,9 +83,9 @@ public class Main {
 
 		ThreadHelper.runThreads("root", new Thread[] {
 			RunElevator(1),
-			// RunElevator(2),
-			// RunElevator(3),
-			// RunElevator(4),
+			RunElevator(2),
+			RunElevator(3),
+			RunElevator(4),
 			// RunElevator(5),
 			RunFloor(events),
 			RunScheduler(),
