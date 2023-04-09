@@ -1,8 +1,4 @@
 package sysc3303_elevator;
-
-
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -51,6 +47,7 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	@Override
 	public void run() {
 		Logger.debugln("Elevator subsystem init");
+		assignErrorsToElevator(resourcePath);
 		this.elevatorThread.start();
 		while (true) {
 			try {
@@ -81,9 +78,9 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	}
 	
 	
-	private void assignErrorsToElevator(String filename) {
-		var stream = Optional.ofNullable(this.getClass().getResourceAsStream(filename));
-		
+	private synchronized void assignErrorsToElevator(String resourcePath) {
+		var stream = Optional.ofNullable(this.getClass().getResourceAsStream(resourcePath));
+
 		Scanner scanner = new Scanner(stream.get());
 
 		while (scanner.hasNextLine()) {

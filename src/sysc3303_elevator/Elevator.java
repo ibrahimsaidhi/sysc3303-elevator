@@ -289,6 +289,7 @@ public class Elevator implements Runnable {
 			try {
 				processErrorEvent();
 				state.advance(this);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				break;
 			}
