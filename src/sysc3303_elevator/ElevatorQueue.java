@@ -2,16 +2,19 @@ package sysc3303_elevator;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
 public class ElevatorQueue {
     private ArrayList<Integer> queue;
+    private HashMap<Integer, ArrayList<Integer>> queueDependent;
     private int currentFloor;
 
     public ElevatorQueue(int currentFloor) {
         this.queue = new ArrayList<>();
+        this.queueDependent = new HashMap<>();
         this.currentFloor = currentFloor;
     }
 
@@ -19,33 +22,49 @@ public class ElevatorQueue {
         return currentFloor < this.peek().orElse(currentFloor) ? Direction.Up : Direction.Down;
     }
 
-    public synchronized void add(int floor) {
-        var direction = this.getDirection();
+    public synchronized void add(int src, int dest) {
+        var dependencies =  this.queueDependent.getOrDefault(src, new ArrayList<>());
+        dependencies.add(dest);
+        this.queueDependent.putIfAbsent(src, dependencies);
+        this.add(src);
+    }
+
+    public synchronized void add(int src) {
+        this.queue.add(src);
 
         var destinations = new HashSet<>(this.queue);
-        destinations.add(floor);
-        var dest = new ArrayList<>(destinations);
-        Collections.sort(dest);
+        for (var otherSources : this.queueDependent.keySet()) {
+            destinations.add(otherSources);
+        }
+
+        this.queue = orderList(destinations);
+    }
+
+    private ArrayList<Integer> orderList(HashSet<Integer> destinations) {
+        var direction = this.getDirection();
+
+        var destArray = new ArrayList<>(destinations);
+        Collections.sort(destArray);
         if (direction.equals(Direction.Down)) {
-            Collections.reverse(dest);
+            Collections.reverse(destArray);
         }
 
         // Bump some values to the back if not continguous in the same direction
         var bumped = new ArrayList<Integer>();
-        while (dest.size() > 0) {
-            var headValue = dest.get(0);
+        while (destArray.size() > 0) {
+            var headValue = destArray.get(0);
             if (direction.equals(Direction.Up) ? headValue < this.currentFloor : headValue > this.currentFloor) {
-                bumped.add(dest.remove(0));
+                bumped.add(destArray.remove(0));
             } else {
                 break;
             }
         }
 
         Collections.reverse(bumped);
-        dest.addAll(bumped);
+        destArray.addAll(bumped);
 
 
-        this.queue = dest;
+        return destArray;
     }
 
     public synchronized Optional<Integer> peek() {
@@ -57,7 +76,14 @@ public class ElevatorQueue {
 
     public synchronized void next() {
         if (this.queue.size() > 0) {
-            this.currentFloor = this.queue.remove(0);
+            var nextFloor = this.queue.remove(0);
+            var newSourceFloors = this.queueDependent.remove(nextFloor);
+            if (newSourceFloors != null) {
+                for (var newSourceFloor : newSourceFloors) {
+                    this.add(newSourceFloor);
+                }
+            }
+            this.currentFloor = nextFloor;
         }
     }
 
