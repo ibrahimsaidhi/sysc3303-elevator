@@ -219,14 +219,14 @@ public class Elevator implements Runnable {
 				int previousFloor = destionationQueue.getCurrentFloor();
 
 				if (status.equals(ElevatorStatus.DoorOpen)) {
-					Thread.sleep(DOOR_OPENNING_CLOSING_TIME_THRESHOLD);
+					Thread.sleep(DOOR_OPENING_CLOSING_TIME_THRESHOLD);
 					if (state.getClass().equals(DoorClosedState.class)) {
 						return;
 					}
 					setdoorStuck(true);
 
 				} else if (status.equals(ElevatorStatus.DoorClose)) {
-					Thread.sleep(DOOR_OPENNING_CLOSING_TIME_THRESHOLD);
+					Thread.sleep(DOOR_OPENING_CLOSING_TIME_THRESHOLD);
 					if (state.getClass().equals(DoorOpenState.class)) {
 						return;
 					}
