@@ -1,6 +1,6 @@
 package sysc3303_elevator;
 
-public enum elevatorError {
+public enum ElevatorError {
 	DoorStuck,
 	StuckBtwFloors,
 }

@@ -1,6 +1,11 @@
 package sysc3303_elevator;
 
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Optional;
+import java.util.Scanner;
+
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
 
@@ -19,6 +24,8 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	private Elevator elevator;
 	private Thread elevatorThread;
 	int elevatorFloors;
+	int elevatorId;
+	public static final String resourcePath = "errors.resources";
 
 	/**
 	 * Constructor for Elevator Class
@@ -37,7 +44,9 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 		this.elevator.addObserver(this);
 
 		this.elevatorThread = new Thread(this.elevator, "elevator_state_" + elevatorId);
+		this.elevatorId = elevatorId;
 	}
+	
 
 	@Override
 	public void run() {
@@ -69,6 +78,29 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+	private void assignErrorsToElevator(String filename) {
+		var stream = Optional.ofNullable(this.getClass().getResourceAsStream(filename));
+		
+		Scanner scanner = new Scanner(stream.get());
+
+		while (scanner.hasNextLine()) {
+
+			String line = scanner.nextLine();
+			String[] parts = line.split(",");
+			int id = Integer.parseInt(parts[0]);
+
+			if (id == this.elevatorId) {
+
+				this.elevator.addError(
+						new ElevatorErrorEvent(parts[1].toLowerCase().contains("door") ? ElevatorError.DoorStuck
+								: ElevatorError.StuckBtwFloors, Integer.parseInt(parts[2])));
+			}
+
+		}
+		scanner.close();
 	}
 
 }

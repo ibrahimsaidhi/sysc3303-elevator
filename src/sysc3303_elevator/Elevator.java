@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Timer;
 
 /**
  * Elevator Class
@@ -29,7 +28,9 @@ public class Elevator implements Runnable {
 	private final int DOOR_CLOSING_TIME = 1000; // milliseconds
 	private final int TIME_BTW_FLOORS_THRESHOLD = 1200; // maximum time for moving between floors or closing door in
 	private final int DOOR_CLOSING_TIME_THRESHOLD = 1200;
-	private Optional<Thread> timer = Optional.empty();	
+	private Optional<Thread> timer = Optional.empty();
+	private List<ElevatorErrorEvent> errorList;
+	private long startTime; // elevator internal timer
 
 	/**
 	 * Constructor for Elevator Class
@@ -49,6 +50,9 @@ public class Elevator implements Runnable {
 		this.observers = new ArrayList<>();
 		this.stuckBtwFloors = false;
 		this.doorStuck = false;
+		this.errorList = new ArrayList<>();
+		
+		startTime = System.currentTimeMillis();
 	}
 
 	public boolean isMotorOn() {
@@ -138,6 +142,10 @@ public class Elevator implements Runnable {
 
 	public synchronized void setdoorStuck(boolean doorStuck) {
 		this.doorStuck = doorStuck;
+	}
+	
+	public synchronized void addError(ElevatorErrorEvent error) {
+		this.errorList.add(error);
 	}
 
 	/**
@@ -236,13 +244,51 @@ public class Elevator implements Runnable {
 		}
 		timer = Optional.empty();
 	}
+	
+	
+	public void processErrorEvent() {
+		if (!errorList.isEmpty()) {
 
+			for (int i = 0; i < errorList.size(); i++) {
+				
+				ElevatorErrorEvent er = errorList.get(i);
+				    
+				var error = er.error();
+				var waitTime = er.waiTime();
+
+				long elapsedTime = System.currentTimeMillis() - startTime;
+
+				if (elapsedTime >= (long) waitTime) {
+					if (error == ElevatorError.DoorStuck) {
+						
+						this.setdoorStuck(true);
+						
+					} else if (error == ElevatorError.StuckBtwFloors) {
+						
+						this.setstuckBtwFloors(true);
+						
+					} else {
+						
+						Logger.debugln("Unknown Error");
+					}
+					
+					errorList.remove(er);
+
+				} else {
+					
+					continue;
+				}
+
+			}
+
+		}
+	}
 
 	public void run() {
 		while (true) {
 			try {
+				processErrorEvent();
 				state.advance(this);
-				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				break;
 			}
