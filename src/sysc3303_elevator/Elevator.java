@@ -29,7 +29,7 @@ public class Elevator implements Runnable {
 	private final int DOOR_OPENNING_CLOSING_TIME = 1000; // milliseconds
 	private final int LOAD_UNLOAD_TIME = 2000; // milliseconds
 	private final int TIME_BTW_FLOORS_THRESHOLD = 1200; // maximum time for moving between floors or closing door in
-	private final int DOOR_OPENNING_CLOSING_TIME_THRESHOLD = 1200;
+	private final int DOOR_OPENING_CLOSING_TIME_THRESHOLD = 1200;
 	private Optional<Thread> timer = Optional.empty();
 
 	/**
