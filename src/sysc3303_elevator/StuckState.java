@@ -8,7 +8,7 @@ public class StuckState implements ElevatorState{
 		if(elevator.isdoorStuck()) {
 			elevator.setStatus(ElevatorStatus.DoorStuck);
 		}else {
-			elevator.setStatus(ElevatorStatus.StuckBtwFloors);
+			elevator.setStatus(ElevatorStatus.StuckBtwnFloors);
 		}
 	}
 
