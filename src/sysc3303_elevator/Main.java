@@ -23,10 +23,10 @@ public class Main {
 	private static final Integer floorPort = 10101;
 	private static final Integer elevatorPort = 10102;
 	private static final String FILE_PATH = "input.txt";
+	private static final String HOST_PREFIX = "host:";
 
-	public static Thread RunElevator(int elevatorId) throws SocketException, UnknownHostException {
-		var elevatorClient1 = new UdpClientQueue<FloorEvent, ElevatorResponse>(InetAddress.getLocalHost(),
-				elevatorPort);
+	public static Thread RunElevator(InetAddress host, int elevatorId) throws SocketException, UnknownHostException {
+		var elevatorClient1 = new UdpClientQueue<FloorEvent, ElevatorResponse>(host, elevatorPort);
 
 		var es1 = new ElevatorSubsystem(5, elevatorId, elevatorClient1.getReceiver(), elevatorClient1.getSender());
 
@@ -50,8 +50,9 @@ public class Main {
 		});
 	}
 
-	public static Thread RunFloor(ArrayList<FloorEvent> events) throws SocketException, UnknownHostException {
-		var floorClient1 = new UdpClientQueue<Message, FloorEvent>(InetAddress.getLocalHost(), floorPort);
+	public static Thread RunFloor(InetAddress host, ArrayList<FloorEvent> events)
+			throws SocketException, UnknownHostException {
+		var floorClient1 = new UdpClientQueue<Message, FloorEvent>(host, floorPort);
 		var f1 = new Floor(floorClient1.getSender(), floorClient1.getReceiver(), events);
 
 		return ThreadHelper.runThreads("floors_prog", new Thread[] {
@@ -104,12 +105,16 @@ public class Main {
 
 		int elevator_id_counter = 1;
 		var tasks = new ArrayList<Thread>();
-		for (var arg : args) {
+		Optional<InetAddress> hostOptional = Optional.empty();
+		for (var argRaw : args) {
+			var arg = argRaw.toLowerCase();
 			switch (arg) {
 				case "elevator":
 				case "e": {
-					Logger.println(String.format("Creating elevator %s", elevator_id_counter));
-					tasks.add(RunElevator(elevator_id_counter));
+					var host = hostOptional.orElse(InetAddress.getLocalHost());
+					Logger.println(
+							String.format("Creating elevator %s (connecting to '%s')", elevator_id_counter, host));
+					tasks.add(RunElevator(host, elevator_id_counter));
 					elevator_id_counter += 1;
 					break;
 				}
@@ -121,14 +126,24 @@ public class Main {
 				}
 				case "floor":
 				case "f": {
-					Logger.println("Creating floor");
-					tasks.add(RunFloor(new ArrayList<>(events)));
+					var host = hostOptional.orElse(InetAddress.getLocalHost());
+					Logger.println(String.format("Creating floor (connecting to '%s')", host));
+					tasks.add(RunFloor(host, new ArrayList<>(events)));
 					break;
 				}
 				default: {
-					throw new RuntimeException(String.format(
-							"Argument '%s' is not valid. Use either 'elevator', 'e', 'scheduler', 's', 'floor', 'f'",
-							arg));
+					if (arg.startsWith(HOST_PREFIX)) {
+						var hostString = arg.substring(HOST_PREFIX.length()).strip();
+						if (hostString.length() > 0) {
+							hostOptional = Optional.of(InetAddress.getByName(hostString));
+						} else {
+							hostOptional = Optional.empty();
+						}
+					} else {
+						throw new RuntimeException(String.format(
+								"Argument '%s' is not valid. Use either 'elevator', 'e', 'scheduler', 's', 'floor', 'f', 'host:*'",
+								arg));
+					}
 				}
 			}
 		}
