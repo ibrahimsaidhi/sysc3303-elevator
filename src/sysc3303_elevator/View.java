@@ -65,7 +65,6 @@ public class View<I, R> extends JFrame implements FieldListener<Object>{
         status.add(statePanel);
         status.add(directionsPanel);
         status.add(floorPanel);
-        status.add(doorPanel);
         
         box.add(status);
         getContentPane().add(box);
@@ -88,7 +87,6 @@ public class View<I, R> extends JFrame implements FieldListener<Object>{
         
         floorPanel.add(floors.get(iterator));
         
-        doorPanel.add(doors.get(iterator));
 	}
 
 	@Override
