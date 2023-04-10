@@ -281,6 +281,10 @@ public class Elevator implements Runnable {
 
 			}
 
+		} else {
+			
+			Logger.debugln("There are no errors to process at the moment");
+			
 		}
 	}
 
