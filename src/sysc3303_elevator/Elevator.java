@@ -73,7 +73,7 @@ public class Elevator implements Runnable {
 	}
 
 	public void setDoorState(DoorState doorState) {
-		Logger.println("Door:  " + doorState.toString());
+		Logger.println("Door:   " + doorState.toString());
 		this.doorState = doorState;
 	}
 
@@ -200,13 +200,13 @@ public class Elevator implements Runnable {
 
 	public Boolean checkAndDealWithFaults() {
 		if (isdoorStuck() || isstuckBtwFloors()) {
-			
+
 			var queue = this.getDestinationFloors();
 			this.setState(new StuckState(this));
 			var response = new ElevatorResponse(queue.getCurrentFloor(), this.getStatus(), this.getDirection());
 			notifyObservers(response);
 			return true;
-			
+
 		}
 		return false;
 	}
