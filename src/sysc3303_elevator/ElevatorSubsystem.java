@@ -1,7 +1,6 @@
 package sysc3303_elevator;
 import java.util.Optional;
 import java.util.Scanner;
-
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
 
@@ -21,7 +20,8 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	private Thread elevatorThread;
 	int elevatorFloors;
 	int elevatorId;
-	public static final String resourcePath = "errors.resources";
+	public static final String resourcePath = "input.resources";
+	public static final String regex  = "\\d+,[a-zA-Z]+,\\d+";
 
 	/**
 	 * Constructor for Elevator Class
@@ -86,14 +86,19 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 		while (scanner.hasNextLine()) {
 
 			String line = scanner.nextLine();
-			String[] parts = line.split(",");
-			int id = Integer.parseInt(parts[0]);
-
-			if (id == this.elevatorId) {
-
-				this.elevator.addError(
-						new ElevatorErrorEvent(parts[1].toLowerCase().contains("door") ? ElevatorError.DoorStuck
-								: ElevatorError.StuckBtwFloors, Integer.parseInt(parts[2])));
+			if (line.matches(regex)) {
+				String[] parts = line.split(",");
+				int id = Integer.parseInt(parts[0]);
+	
+				if (id == this.elevatorId) {
+	
+					this.elevator.addError(
+							new ElevatorErrorEvent(parts[1].toLowerCase().contains("door") ? ElevatorError.DoorStuck
+									: ElevatorError.StuckBtwFloors, Integer.parseInt(parts[2])));
+				}
+			} else {
+				
+				continue;
 			}
 
 		}

@@ -14,6 +14,8 @@ import java.util.ArrayList;
  */
 public class FloorFormatReader {
 	private BufferedReader inputStream;
+	public static final String resourcePath = "input.resources";
+	public static final String regex  = "\\d{2}:\\d{2}:\\d{2}\\.\\d\\s\\d+\\s\\w+\\s\\d+";
 
 	public FloorFormatReader(InputStream inputStream) {
 		this.inputStream = new BufferedReader(new InputStreamReader(inputStream));
@@ -24,22 +26,27 @@ public class FloorFormatReader {
 		if (line == null) {
 			throw new IOException();
 		}
-		var attributes = line.split(" ");
-		DateTimeFormatter parser = DateTimeFormatter.ofPattern("HH:mm:ss[.n]");
-		LocalTime localTime = LocalTime.parse(attributes[0], parser);
-		return new FloorEvent(
-				localTime,
-				Integer.parseInt(attributes[1]),
-				attributes[2].toLowerCase().charAt(0) == 'u' ? Direction.Up : Direction.Down,
-				Integer.parseInt(attributes[3])
-		);
+
+		if (line.matches(regex)) {
+			var attributes = line.split(" ");
+			DateTimeFormatter parser = DateTimeFormatter.ofPattern("HH:mm:ss[.n]");
+			LocalTime localTime = LocalTime.parse(attributes[0], parser);
+			return new FloorEvent(localTime, Integer.parseInt(attributes[1]),
+					attributes[2].toLowerCase().charAt(0) == 'u' ? Direction.Up : Direction.Down,
+					Integer.parseInt(attributes[3]));
+		} else {
+			return null;
+		}
 	}
-	
+
 	public ArrayList<FloorEvent> toList() {
 		var list = new ArrayList<FloorEvent>();
 		while (true) {
 			try {
-				list.add(this.next());
+				var event = this.next();
+				if (event != null) {
+					list.add(event);
+				}
 			} catch (IOException e) {
 				break;
 			}
