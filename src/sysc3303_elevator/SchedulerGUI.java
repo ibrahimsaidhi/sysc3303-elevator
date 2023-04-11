@@ -5,7 +5,7 @@ import java.util.*;
 
 import javax.swing.*;
 
-public class View<I, R> extends JFrame implements FieldListener<Object>{
+public class SchedulerGUI<I, R> extends JFrame implements SchedulerUpdateListener<I>{
 
 	private JTextArea textArea;
     private JPanel status;
@@ -25,13 +25,12 @@ public class View<I, R> extends JFrame implements FieldListener<Object>{
     private ArrayList<JTextField> states = new ArrayList<JTextField>();
     private ArrayList<JTextField> floors = new ArrayList<JTextField>();
     private ArrayList<JTextField> directions = new ArrayList<JTextField>();
-    private ArrayList<JTextField> doors = new ArrayList<JTextField>();
     
     private ArrayList<Object> channelIDs = new ArrayList<Object>();
     int iterator = 0;
     
-	public View(Scheduler<I, R> scheduler) {
-		super("Elevator View");
+	public SchedulerGUI(Scheduler<I, R> scheduler) {
+		super("Elevator SchedulerGUI");
 		scheduler.addView(this);
 		initialize();
 	}
@@ -74,7 +73,7 @@ public class View<I, R> extends JFrame implements FieldListener<Object>{
 	
 	
 	@Override
-	public void updateSchedulerFieldArea(String str) {
+	public void sendLogMessage(String str) {
 		textArea.append(str);	
 	}
 	
@@ -90,7 +89,7 @@ public class View<I, R> extends JFrame implements FieldListener<Object>{
 	}
 
 	@Override
-	public void updateElevatorFieldArea(Object channelId, String floor, String direction, String state) {
+	public void updateElevatorStatus(Object channelId, String floor, String direction, String state) {
 		if (!channelIDs.contains(channelId)) {
 			channelIDs.add(channelId);
 			iterator = channelIDs.indexOf(channelId);

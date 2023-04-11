@@ -22,7 +22,7 @@ public class Scheduler<I, R> implements Runnable {
 	private HashMap<I, ElevatorResponse> elevatorStateCache;
 
 	private ArrayList<FloorEvent> requestQueue = new ArrayList<>();
-	private ArrayList<FieldListener> views = new ArrayList<>();
+	private ArrayList<SchedulerUpdateListener<I>> views = new ArrayList<>();
 
 	public Scheduler(
 			BlockingMultiplexer<I, FloorEvent, ElevatorResponse> elevatorMux,
@@ -32,11 +32,11 @@ public class Scheduler<I, R> implements Runnable {
 		this.floorMux = floorMux;
 	}
 	
-	public void addView(FieldListener e) {
+	public void addView(SchedulerUpdateListener<I> e) {
 		views.add(e);
 	}
 	
-	public void removeView(FieldListener e) {
+	public void removeView(SchedulerUpdateListener<I> e) {
 		views.remove(e);
 	}
 
@@ -110,8 +110,8 @@ public class Scheduler<I, R> implements Runnable {
 			// Send additional down request to elevators that are already going down
 			for (var downRequest : requestsByDirection.second()) {
 				Logger.debugln("Down request " + downRequest.toString());
-				for (FieldListener e: views) {
-					e.updateSchedulerFieldArea(String.format("%18s: -%s",Thread.currentThread().getName(), "Down request " + downRequest.toString() + "\n"));
+				for (SchedulerUpdateListener<I> e: views) {
+					e.sendLogMessage(String.format("%18s: -%s",Thread.currentThread().getName(), "Down request " + downRequest.toString() + "\n"));
 				}
 				// Find the closest elevator that is going in the right direction
 				Optional<Pair<I, ElevatorResponse>> closestEntry = Optional.empty();
@@ -203,8 +203,8 @@ public class Scheduler<I, R> implements Runnable {
 						TaggedMsg<R, FloorEvent> event = floorMux.take();
 						FloorEvent e = event.content();
 						Logger.debugln("Got " + event.toString());
-						for (FieldListener view: views) {
-							view.updateSchedulerFieldArea(String.format("%18s: -%s",Thread.currentThread().getName(), "Got " + event.toString() + "\n"));
+						for (SchedulerUpdateListener<I> view: views) {
+							view.sendLogMessage(String.format("%18s: -%s",Thread.currentThread().getName(), "Got " + event.toString() + "\n"));
 						}
 						floorMux.put(event.replaceContent(new Message("ack"))); // TODO: Make this an actual message
 						synchronized (requestQueue) {
@@ -221,8 +221,8 @@ public class Scheduler<I, R> implements Runnable {
 		t.start();
 		
 		//Logger.println("Scheduler initialized");
-		for (FieldListener<I> e: views) {
-			e.updateSchedulerFieldArea("Scheduler initialized" + "\n");
+		for (SchedulerUpdateListener<I> e: views) {
+			e.sendLogMessage("Scheduler initialized" + "\n");
 		}
 
 		while (true) {
@@ -230,9 +230,9 @@ public class Scheduler<I, R> implements Runnable {
 				TaggedMsg<I, ElevatorResponse> event = elevatorMux.take();
 				ElevatorResponse response = event.content();
 				Logger.debugln("Got " + event.toString());
-				for (FieldListener<I> view: views) {
-					view.updateSchedulerFieldArea(String.format("%18s: -%s",Thread.currentThread().getName(), "Got " + event.toString() + "\n"));
-					view.updateElevatorFieldArea(event.id(), String.valueOf(response.currentFloor()), String.valueOf(response.direction()), String.valueOf(response.state()));
+				for (SchedulerUpdateListener<I> view: views) {
+					view.sendLogMessage(String.format("%18s: -%s",Thread.currentThread().getName(), "Got " + event.toString() + "\n"));
+					view.updateElevatorStatus(event.id(), String.valueOf(response.currentFloor()), String.valueOf(response.direction()), String.valueOf(response.state()));
 				}
 				this.elevatorStateCache.put(event.id(), response);
 
@@ -243,8 +243,8 @@ public class Scheduler<I, R> implements Runnable {
 		}
 
 		Logger.println("Scheduler interrupted");
-		for (FieldListener e: views) {
-			e.updateSchedulerFieldArea("Scheduler interrupted" + "\n");
+		for (SchedulerUpdateListener<I> e: views) {
+			e.sendLogMessage("Scheduler interrupted" + "\n");
 		}
 		t.interrupt();
 	}
