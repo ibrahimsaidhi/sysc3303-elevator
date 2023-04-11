@@ -69,13 +69,11 @@ public class SchedulerGUI<I> extends JFrame implements SchedulerUpdateListener<I
 
 	private void addElevatorToView() {
 		elevatorPanel.add(new JLabel("Elevator " + (iterator + 1)));
-
 		statePanel.add(states.get(iterator));
-
 		directionsPanel.add(directions.get(iterator));
-
 		floorPanel.add(floors.get(iterator));
 
+		this.pack();
 	}
 
 	@Override
