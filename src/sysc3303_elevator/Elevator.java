@@ -30,7 +30,7 @@ public class Elevator implements Runnable {
 	private final int TIME_BTW_FLOORS_THRESHOLD = 1200; // maximum time for moving between floors or closing door in
 	private final int DOOR_CLOSING_TIME_THRESHOLD = 1200;
 	private Optional<Thread> timer = Optional.empty();	
-	
+
 	/**
 	 * Constructor for Elevator Class
 	 *
