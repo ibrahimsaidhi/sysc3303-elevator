@@ -1,5 +1,7 @@
 package sysc3303_elevator;
+
 import java.util.ArrayList;
+
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
 
@@ -20,20 +22,19 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	int elevatorFloors;
 	int elevatorId;
 	private ArrayList<ElevatorErrorEvent> errorEvents;
-	
 
 	/**
 	 * Constructor for Elevator Class
-	 * @param errorEvents 
+	 *
+	 * @param errorEvents
 	 *
 	 */
 	public ElevatorSubsystem(
 			int numberOfFloors,
 			int elevatorId,
 			BlockingReceiver<FloorEvent> schedulerToElevatorSubsystem,
-			BlockingSender<ElevatorResponse> elevatorSubsystemToScheduler, 
-			ArrayList<ElevatorErrorEvent> errorEvents
-	) {
+			BlockingSender<ElevatorResponse> elevatorSubsystemToScheduler,
+			ArrayList<ElevatorErrorEvent> errorEvents) {
 
 		this.schedulerToElevatorSubsystemQueue = schedulerToElevatorSubsystem;
 		this.elevatorSubsystemToSchedulerQueue = elevatorSubsystemToScheduler;
@@ -44,7 +45,6 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 		this.elevatorId = elevatorId;
 		this.errorEvents = errorEvents;
 	}
-	
 
 	@Override
 	public void run() {
@@ -78,11 +78,10 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	private synchronized void assignErrorsToElevator() {
 		for (ElevatorErrorEvent event : errorEvents) {
-			if(event.id() == this.elevatorId) {
+			if (event.id() == this.elevatorId) {
 				this.elevator.addError(event);
 			}
 		}

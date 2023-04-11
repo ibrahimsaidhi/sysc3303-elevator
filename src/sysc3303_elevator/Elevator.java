@@ -27,7 +27,9 @@ public class Elevator implements Runnable {
 	private final int TIME_BETWEEN_FLOORS = 1000; // milliseconds
 	private final int DOOR_CLOSING_TIME = 1000; // milliseconds
 	private final int TIME_BETWEEN_FLOORS_THRESHOLD = 1200; // maximum time for moving between floors or closing door in
-	private final int DOOR_CLOSING_TIME_THRESHOLD = 1200;
+	private final int DOOR_OPENING_CLOSING_TIME = 1000; // milliseconds
+	private final int LOAD_UNLOAD_TIME = 2000; // milliseconds
+	private final int DOOR_OPENING_CLOSING_TIME_THRESHOLD = 1200;
 	private Optional<Thread> timer = Optional.empty();
 	private List<ElevatorErrorEvent> errorList;
 	private long startTime; // elevator internal timer
@@ -51,7 +53,7 @@ public class Elevator implements Runnable {
 		this.stuckBetweenFloors = false;
 		this.doorStuck = false;
 		this.errorList = new ArrayList<>();
-		
+
 		startTime = System.currentTimeMillis();
 	}
 
@@ -76,7 +78,7 @@ public class Elevator implements Runnable {
 	}
 
 	public void setDoorState(DoorState doorState) {
-		Logger.println("Door:  " + doorState.toString());
+		Logger.println("Door:   " + doorState.toString());
 		this.doorState = doorState;
 	}
 
@@ -143,7 +145,7 @@ public class Elevator implements Runnable {
 	public synchronized void setdoorStuck(boolean doorStuck) {
 		this.doorStuck = doorStuck;
 	}
-	
+
 	public synchronized void addError(ElevatorErrorEvent error) {
 		this.errorList.add(error);
 	}
@@ -158,8 +160,15 @@ public class Elevator implements Runnable {
 	/**
 	 * @return the DOOR_CLOSING_TIME
 	 */
-	public int getDOOR_CLOSING_TIME() {
-		return DOOR_CLOSING_TIME;
+	public int getDOOR_OPENNING_CLOSING_TIME() {
+		return DOOR_OPENING_CLOSING_TIME;
+	}
+
+	/**
+	 * @return the lOAD_UNLOAD_TIME
+	 */
+	public int getLOAD_UNLOAD_TIME() {
+		return LOAD_UNLOAD_TIME;
 	}
 
 	/**
@@ -178,8 +187,7 @@ public class Elevator implements Runnable {
 			int srcFloor = event.srcFloor();
 
 			if (destFloor != 0 && srcFloor != destFloor) {
-				queue.add(srcFloor);
-				queue.add(destFloor);
+				queue.add(srcFloor, destFloor);
 				this.getButtonLampStates()[destFloor] = ButtonLampState.ON;
 
 				if (queue.getCurrentFloor() != queue.peek().get()) {
@@ -201,7 +209,11 @@ public class Elevator implements Runnable {
 
 	public Boolean checkAndDealWithFaults() {
 		if (isdoorStuck() || isstuckBetweenFloors()) {
-			setState(new StuckState(this));
+			var queue = this.getDestinationFloors();
+			this.setState(new StuckState(this));
+			var response = new ElevatorResponse(queue.getCurrentFloor(), this.getStatus(), this.getDirection());
+			notifyObservers(response);
+
 			return true;
 		}
 		return false;
@@ -212,79 +224,72 @@ public class Elevator implements Runnable {
 		timer = Optional.of(new Thread(() -> {
 			try {
 				int previousFloor = destionationQueue.getCurrentFloor();
-	
+
 				if (status.equals(ElevatorStatus.DoorOpen)) {
-					Thread.sleep(DOOR_CLOSING_TIME_THRESHOLD);
+					Thread.sleep(DOOR_OPENING_CLOSING_TIME_THRESHOLD);
 					if (state.getClass().equals(DoorClosedState.class)) {
 						return;
 					}
 					setdoorStuck(true);
-	
+
+				} else if (status.equals(ElevatorStatus.DoorClose)) {
+					Thread.sleep(DOOR_OPENING_CLOSING_TIME_THRESHOLD);
+					if (state.getClass().equals(DoorOpenState.class)) {
+						return;
+					}
+					setdoorStuck(true);
+
 				} else if (status.equals(ElevatorStatus.Moving)) {
 					Thread.sleep(TIME_BETWEEN_FLOORS_THRESHOLD);
 					if (previousFloor == destionationQueue.getCurrentFloor()) {
 						setstuckBetweenFloors(true);
 					}
 				} else {
-	
+
 					return; // add more actions
 				}
-			}catch (InterruptedException e) {
+			} catch (InterruptedException e) {
 				return;
 			}
 
 		}));
 		timer.get().start();
 	}
-	
+
 	public void stopTimer() throws InterruptedException {
-		if (timer.isPresent()){
+		if (timer.isPresent()) {
 			timer.get().interrupt();
 			timer.get().join();
 		}
 		timer = Optional.empty();
 	}
-	
-	
+
 	public void processErrorEvent() {
-		if (!errorList.isEmpty()) {
+		if (errorList.isEmpty()) {
 
-			for (int i = 0; i < errorList.size(); i++) {
-				
-				ElevatorErrorEvent er = errorList.get(i);
-				    
-				var error = er.error();
-				var waitTime = er.waiTime();
+			Logger.debugln("There are no errors to process at the moment");
+			return;
+		}
 
-				long elapsedTime = System.currentTimeMillis() - startTime;
+		for (int i = 0; i < errorList.size(); i++) {
+			ElevatorErrorEvent er = errorList.get(i);
+			var error = er.error();
+			var waitTime = er.waiTime();
+			long elapsedTime = System.currentTimeMillis() - startTime;
 
-				if (elapsedTime >= waitTime) {
-					if (error == ElevatorError.DoorStuck) {
-						
-						this.setdoorStuck(true);
-						
-					} else if (error == ElevatorError.StuckBetweenFloors) {
-						
-						this.setstuckBetweenFloors(true);
-						
-					} else {
-						
-						Logger.debugln("Unknown Error");
-					}
-					
-					errorList.remove(er);
-
+			if (elapsedTime >= waitTime) {
+				if (error == ElevatorError.DoorStuck) {
+					this.setdoorStuck(true);
+				} else if (error == ElevatorError.StuckBetweenFloors) {
+					this.setstuckBetweenFloors(true);
 				} else {
-					
-					continue;
+					Logger.debugln("Unknown Error");
 				}
 
+				errorList.remove(er);
+			} else {
+				continue;
 			}
-
-		} else {
-			
-			Logger.debugln("There are no errors to process at the moment");
-			
 		}
 	}
 

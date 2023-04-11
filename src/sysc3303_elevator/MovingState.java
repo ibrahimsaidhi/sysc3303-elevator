@@ -13,22 +13,23 @@ public class MovingState implements ElevatorState {
 		// Start moving
 		elevator.setMoving(true);
 		Logger.debugln("Elevator doors are " + elevator.getDoorState() + ", motor is ON. Car button " + destinationFloor
-				+ " lamp is " + elevator.getButtonLampStates()[destinationFloor]
-				+ " Elevator is moving " + elevator.getDirection());
+				+ " lamp is " + elevator.getButtonLampStates()[destinationFloor] + " Elevator is moving "
+				+ elevator.getDirection());
 		while (queue.getCurrentFloor() != destinationFloor) {
 			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 			elevator.notifyObservers(response);
-			
+
 			elevator.startTimer(ElevatorStatus.Moving);
-	
+
 			Thread.sleep(elevator.getTIME_BETWEEN_FLOORS());
 			queue.advance();
-			Logger.println("Floor: " + queue.getCurrentFloor());
-						
-			if(elevator.checkAndDealWithFaults()) {
+			Logger.println("Floor:  " + queue.getCurrentFloor());
+
+			if (elevator.checkAndDealWithFaults()) {
 				return;
-			};
-			
+			}
+			;
+
 		}
 		var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 		elevator.notifyObservers(response);
@@ -39,6 +40,16 @@ public class MovingState implements ElevatorState {
 		queue.next();
 		elevator.setMotorOn(false);
 		elevator.setMoving(false);
+
+		// opening doors
+		Logger.debugln("Openning doors");
+		elevator.startTimer(ElevatorStatus.DoorClose);
+		Thread.sleep(elevator.getDOOR_OPENNING_CLOSING_TIME());
+
+		if (elevator.checkAndDealWithFaults()) {
+			return;
+		}
+
 		elevator.setDoorState(DoorState.OPEN);
 
 		elevator.setState(new DoorOpenState(elevator));
