@@ -40,10 +40,6 @@ public class SchedulerGUI<I, R> extends JFrame implements SchedulerUpdateListene
 		textArea = new JTextArea(5, 40);
 		textArea.setEditable(false);
 
-		JScrollPane pane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		pane.setBorder(BorderFactory.createTitledBorder("Scheduler"));
-		box.add(pane);
 		status = new JPanel();
 		status.setLayout(layout);
 
