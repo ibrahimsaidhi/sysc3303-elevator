@@ -132,8 +132,8 @@ public class Elevator implements Runnable {
 		return stuckBetweenFloors;
 	}
 
-	public synchronized void setstuckBetweenFloors(boolean stuckBtwFloors) {
-		this.stuckBetweenFloors = stuckBtwFloors;
+	public synchronized void setstuckBetweenFloors(boolean stuckBetweenFloors) {
+		this.stuckBetweenFloors = stuckBetweenFloors;
 	}
 
 	public synchronized boolean isdoorStuck() {
@@ -149,9 +149,9 @@ public class Elevator implements Runnable {
 	}
 
 	/**
-	 * @return the tIME_BTW_FLOORS
+	 * @return the tIME_BTEWEEN_FLOORS
 	 */
-	public int getTIME_BTWN_FLOORS() {
+	public int getTIME_BETWEEN_FLOORS() {
 		return TIME_BETWEEN_FLOORS;
 	}
 
