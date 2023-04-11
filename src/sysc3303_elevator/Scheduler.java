@@ -41,7 +41,7 @@ public class Scheduler<I, R> implements Runnable {
 	}
 
 	public void trySendElevatorGoto() throws InterruptedException {
-		//Logger.debugln("Elevator States:");
+		Logger.debugln("Elevator States:");
 		
 		for (var entry : this.elevatorStateCache.entrySet()) {
 			Logger.debugln("   " + entry.getKey() + " " + entry.getValue());
@@ -127,7 +127,7 @@ public class Scheduler<I, R> implements Runnable {
 							continue;
 						}
 	
-						//Logger.debugln("Step 1");
+						Logger.debugln("Step 1");
 						if (downRequest.srcFloor() < elevatorInfo.currentFloor()) {
 							Logger.debugln("Step 2");
 							if (closestEntry.isPresent()) {
@@ -148,8 +148,8 @@ public class Scheduler<I, R> implements Runnable {
 					var channelId = newRequest.first();
 					var elevatorInfo = newRequest.second();
 					// Found idle elevator. Send request!
-					Logger.println("Goto:  Sending to " + channelId + " with state " + elevatorInfo.toString());
-							//+ " (down append)");
+					Logger.println("Goto:  Sending to " + channelId + " with state " + elevatorInfo.toString()
+							+ " (down append)");
 					if (this.requestQueue.remove(downRequest)) {
 						this.elevatorMux
 								.put(new TaggedMsg<I, FloorEvent>(channelId, downRequest));
@@ -169,7 +169,7 @@ public class Scheduler<I, R> implements Runnable {
 				for (var entry : this.elevatorStateCache.entrySet()) {
 					var channelId = entry.getKey();
 					var elevatorInfo = entry.getValue();
-					//Logger.debugln("Entry " + channelId + " " + elevatorInfo);
+					Logger.debugln("Entry " + channelId + " " + elevatorInfo);
 					if (!elevatorInfo.state().equals(ElevatorStatus.ShutDown)) {
 						if (elevatorInfo.state().equals(ElevatorStatus.Idle)) {
 							// Found idle elevator. Send request!

@@ -31,8 +31,6 @@ public class Elevator implements Runnable {
 	private final int DOOR_CLOSING_TIME_THRESHOLD = 1200;
 	private Optional<Thread> timer = Optional.empty();	
 	
-	
-
 	/**
 	 * Constructor for Elevator Class
 	 *
@@ -75,7 +73,6 @@ public class Elevator implements Runnable {
 
 	public void setDoorState(DoorState doorState) {
 		Logger.println("Door:  " + doorState.toString());
-		
 		this.doorState = doorState;
 	}
 
@@ -97,7 +94,6 @@ public class Elevator implements Runnable {
 
 	public void setState(ElevatorState state) {
 		Logger.debugln("State: " + state.getClass().getSimpleName());
-		
 		this.state = state;
 	}
 

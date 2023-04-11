@@ -83,9 +83,9 @@ public class Main {
 
 		ThreadHelper.runThreads("root", new Thread[] {
 			RunElevator(1),
-			RunElevator(2),
-			RunElevator(3),
-			RunElevator(4),
+			// RunElevator(2),
+			// RunElevator(3),
+			// RunElevator(4),
 			// RunElevator(5),
 			RunFloor(events),
 			RunScheduler(),
