@@ -2,6 +2,8 @@ package sysc3303_elevator.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
+
 import org.junit.jupiter.api.Test;
 
 import sysc3303_elevator.ButtonLampState;
@@ -9,6 +11,7 @@ import sysc3303_elevator.Direction;
 import sysc3303_elevator.DoorClosedState;
 import sysc3303_elevator.DoorOpenState;
 import sysc3303_elevator.Elevator;
+import sysc3303_elevator.ElevatorErrorEvent;
 import sysc3303_elevator.ElevatorResponse;
 import sysc3303_elevator.ElevatorSubsystem;
 import sysc3303_elevator.FloorEvent;
@@ -52,12 +55,15 @@ class ElevatorTest {
 				count++;
 			}
 		};
+		
+		var list = new ArrayList<ElevatorErrorEvent>();
 
 		var e1 = new ElevatorSubsystem(
 				5,
 				1,
 				inbound,
-				outbound
+				outbound,
+				list
 		);
 
 		var t1 = new Thread(e1, "Elev-Sub");
@@ -147,7 +153,7 @@ class ElevatorTest {
         assertEquals(elevator.getState().getClass(), MovingState.class);
         
         
-        elevator.setstuckBtwnFloors(true); //trigger fault - elevator stuck between floors
+        elevator.setstuckBetweenFloors(true); //trigger fault - elevator stuck between floors
         elevator.getState().advance(elevator);
         assertEquals(elevator.getState().getClass(), StuckState.class);
         
