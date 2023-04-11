@@ -22,11 +22,11 @@ public class Elevator implements Runnable {
 	private ElevatorState state;
 	private ElevatorStatus status;
 	private List<ElevatorObserver> observers;
-	private boolean stuckBtwnFloors;
+	private boolean stuckBetweenFloors;
 	private boolean doorStuck;
-	private final int TIME_BTWN_FLOORS = 1000; // milliseconds
+	private final int TIME_BETWEEN_FLOORS = 1000; // milliseconds
 	private final int DOOR_CLOSING_TIME = 1000; // milliseconds
-	private final int TIME_BTW_FLOORS_THRESHOLD = 1200; // maximum time for moving between floors or closing door in
+	private final int TIME_BETWEEN_FLOORS_THRESHOLD = 1200; // maximum time for moving between floors or closing door in
 	private final int DOOR_CLOSING_TIME_THRESHOLD = 1200;
 	private Optional<Thread> timer = Optional.empty();
 	private List<ElevatorErrorEvent> errorList;
@@ -48,7 +48,7 @@ public class Elevator implements Runnable {
 
 		this.state = new ElevatorInitState(this);
 		this.observers = new ArrayList<>();
-		this.stuckBtwnFloors = false;
+		this.stuckBetweenFloors = false;
 		this.doorStuck = false;
 		this.errorList = new ArrayList<>();
 		
@@ -128,12 +128,12 @@ public class Elevator implements Runnable {
 		return status;
 	}
 
-	public synchronized boolean isstuckBtwnFloors() {
-		return stuckBtwnFloors;
+	public synchronized boolean isstuckBetweenFloors() {
+		return stuckBetweenFloors;
 	}
 
-	public synchronized void setstuckBtwnFloors(boolean stuckBtwFloors) {
-		this.stuckBtwnFloors = stuckBtwFloors;
+	public synchronized void setstuckBetweenFloors(boolean stuckBtwFloors) {
+		this.stuckBetweenFloors = stuckBtwFloors;
 	}
 
 	public synchronized boolean isdoorStuck() {
@@ -152,7 +152,7 @@ public class Elevator implements Runnable {
 	 * @return the tIME_BTW_FLOORS
 	 */
 	public int getTIME_BTWN_FLOORS() {
-		return TIME_BTWN_FLOORS;
+		return TIME_BETWEEN_FLOORS;
 	}
 
 	/**
@@ -172,7 +172,7 @@ public class Elevator implements Runnable {
 	 * @author Tao Lufula, 101164153
 	 */
 	public void processFloorEvent(FloorEvent event) {
-		if (!isstuckBtwnFloors()) {
+		if (!isstuckBetweenFloors()) {
 			var queue = this.getDestinationFloors();
 			int destFloor = event.destFloor();
 			int srcFloor = event.srcFloor();
@@ -200,7 +200,7 @@ public class Elevator implements Runnable {
 	}
 
 	public Boolean checkAndDealWithFaults() {
-		if (isdoorStuck() || isstuckBtwnFloors()) {
+		if (isdoorStuck() || isstuckBetweenFloors()) {
 			setState(new StuckState(this));
 			return true;
 		}
@@ -221,9 +221,9 @@ public class Elevator implements Runnable {
 					setdoorStuck(true);
 	
 				} else if (status.equals(ElevatorStatus.Moving)) {
-					Thread.sleep(TIME_BTW_FLOORS_THRESHOLD);
+					Thread.sleep(TIME_BETWEEN_FLOORS_THRESHOLD);
 					if (previousFloor == destionationQueue.getCurrentFloor()) {
-						setstuckBtwnFloors(true);
+						setstuckBetweenFloors(true);
 					}
 				} else {
 	
@@ -258,14 +258,14 @@ public class Elevator implements Runnable {
 
 				long elapsedTime = System.currentTimeMillis() - startTime;
 
-				if (elapsedTime >= (long) waitTime) {
+				if (elapsedTime >= waitTime) {
 					if (error == ElevatorError.DoorStuck) {
 						
 						this.setdoorStuck(true);
 						
-					} else if (error == ElevatorError.StuckBtwFloors) {
+					} else if (error == ElevatorError.StuckBetweenFloors) {
 						
-						this.setstuckBtwnFloors(true);
+						this.setstuckBetweenFloors(true);
 						
 					} else {
 						

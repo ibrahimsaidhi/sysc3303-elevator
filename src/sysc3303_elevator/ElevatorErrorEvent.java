@@ -1,3 +1,3 @@
 package sysc3303_elevator;
 
-public record ElevatorErrorEvent(ElevatorError error, int waiTime) { }
+public record ElevatorErrorEvent(int id,ElevatorError error, long waiTime) { }

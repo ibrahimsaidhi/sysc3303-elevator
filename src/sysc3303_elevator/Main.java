@@ -27,11 +27,11 @@ public class Main {
 	private static final Integer elevatorPort = 10102;
 	public static final String resourcePath = "input.resources";
 
-	public static Thread RunElevator(int elevatorId) throws SocketException, UnknownHostException {
+	public static Thread RunElevator(int elevatorId, ArrayList<ElevatorErrorEvent> errorEvents) throws SocketException, UnknownHostException {
 		var elevatorClient1 = new UdpClientQueue<FloorEvent, ElevatorResponse>(InetAddress.getLocalHost(),
 				elevatorPort);
 
-		var es1 = new ElevatorSubsystem(5, elevatorId, elevatorClient1.getReceiver(), elevatorClient1.getSender());
+		var es1 = new ElevatorSubsystem(5, elevatorId, elevatorClient1.getReceiver(), elevatorClient1.getSender(), errorEvents);
 
 		return ThreadHelper.runThreads("elevator_prog", new Thread[] {
 				new Thread(elevatorClient1, "elev_c_" + elevatorId), 
@@ -91,14 +91,17 @@ public class Main {
 
 		var floorReader = new FloorFormatReader(fileStream.get());
 		var events = floorReader.toList();
+		
+		var floorEvents = events.first();
+		var errorEvents = events.second();
 
 		ThreadHelper.runThreads("root", new Thread[] { 
-			RunElevator(1),
-			// RunElevator(2),
-			// RunElevator(3),
-			// RunElevator(4),
-			// RunElevator(5),
-			RunFloor(events), 
+			RunElevator(1, errorEvents),
+			// RunElevator(2, errorEvents),
+			// RunElevator(3, errorEvents),
+			// RunElevator(4, errorEvents),
+			// RunElevator(5, errorEvents),
+			RunFloor(floorEvents), 
 			RunScheduler(), 
 		}).join();
 

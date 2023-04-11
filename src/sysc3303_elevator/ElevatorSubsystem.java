@@ -1,6 +1,5 @@
 package sysc3303_elevator;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.ArrayList;
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
 
@@ -20,18 +19,20 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	private Thread elevatorThread;
 	int elevatorFloors;
 	int elevatorId;
-	public static final String resourcePath = "input.resources";
-	public static final String regex  = "\\d+,[a-zA-Z]+,\\d+";
+	private ArrayList<ElevatorErrorEvent> errorEvents;
+	
 
 	/**
 	 * Constructor for Elevator Class
+	 * @param errorEvents 
 	 *
 	 */
 	public ElevatorSubsystem(
 			int numberOfFloors,
 			int elevatorId,
 			BlockingReceiver<FloorEvent> schedulerToElevatorSubsystem,
-			BlockingSender<ElevatorResponse> elevatorSubsystemToScheduler
+			BlockingSender<ElevatorResponse> elevatorSubsystemToScheduler, 
+			ArrayList<ElevatorErrorEvent> errorEvents
 	) {
 
 		this.schedulerToElevatorSubsystemQueue = schedulerToElevatorSubsystem;
@@ -41,13 +42,14 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 
 		this.elevatorThread = new Thread(this.elevator, "elevator_state_" + elevatorId);
 		this.elevatorId = elevatorId;
+		this.errorEvents = errorEvents;
 	}
 	
 
 	@Override
 	public void run() {
 		Logger.debugln("Elevator subsystem init");
-		assignErrorsToElevator(resourcePath);
+		assignErrorsToElevator();
 		this.elevatorThread.start();
 		while (true) {
 			try {
@@ -78,31 +80,12 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	}
 	
 	
-	private synchronized void assignErrorsToElevator(String resourcePath) {
-		var stream = Optional.ofNullable(this.getClass().getResourceAsStream(resourcePath));
-
-		Scanner scanner = new Scanner(stream.get());
-
-		while (scanner.hasNextLine()) {
-
-			String line = scanner.nextLine();
-			if (line.matches(regex)) {
-				String[] parts = line.split(",");
-				int id = Integer.parseInt(parts[0]);
-	
-				if (id == this.elevatorId) {
-	
-					this.elevator.addError(
-							new ElevatorErrorEvent(parts[1].toLowerCase().contains("door") ? ElevatorError.DoorStuck
-									: ElevatorError.StuckBtwFloors, Integer.parseInt(parts[2])));
-				}
-			} else {
-				
-				continue;
+	private synchronized void assignErrorsToElevator() {
+		for (ElevatorErrorEvent event : errorEvents) {
+			if(event.id() == this.elevatorId) {
+				this.elevator.addError(event);
 			}
-
 		}
-		scanner.close();
 	}
 
 }
