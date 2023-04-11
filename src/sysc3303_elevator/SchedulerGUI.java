@@ -5,7 +5,7 @@ import java.util.*;
 
 import javax.swing.*;
 
-public class SchedulerGUI<I, R> extends JFrame implements SchedulerUpdateListener<I> {
+public class SchedulerGUI<I> extends JFrame implements SchedulerUpdateListener<I> {
 
 	private JTextArea textArea;
 	private JPanel status;
@@ -26,16 +26,12 @@ public class SchedulerGUI<I, R> extends JFrame implements SchedulerUpdateListene
 	private ArrayList<JTextField> floors = new ArrayList<JTextField>();
 	private ArrayList<JTextField> directions = new ArrayList<JTextField>();
 
-	private ArrayList<Object> channelIDs = new ArrayList<Object>();
+	private ArrayList<I> channelIDs = new ArrayList<>();
 	int iterator = 0;
 
-	public SchedulerGUI(Scheduler<I, R> scheduler) {
+	public SchedulerGUI() {
 		super("Elevator SchedulerGUI");
-		scheduler.addView(this);
-		initialize();
-	}
 
-	private void initialize() {
 		Box box = Box.createVerticalBox();
 		textArea = new JTextArea(5, 40);
 		textArea.setEditable(false);
@@ -73,17 +69,15 @@ public class SchedulerGUI<I, R> extends JFrame implements SchedulerUpdateListene
 
 	private void addElevatorToView() {
 		elevatorPanel.add(new JLabel("Elevator " + (iterator + 1)));
-
 		statePanel.add(states.get(iterator));
-
 		directionsPanel.add(directions.get(iterator));
-
 		floorPanel.add(floors.get(iterator));
 
+		this.pack();
 	}
 
 	@Override
-	public void updateElevatorStatus(Object channelId, String floor, String direction, String state) {
+	public void updateElevatorStatus(I channelId, String floor, String direction, String state) {
 		if (!channelIDs.contains(channelId)) {
 			channelIDs.add(channelId);
 			iterator = channelIDs.indexOf(channelId);

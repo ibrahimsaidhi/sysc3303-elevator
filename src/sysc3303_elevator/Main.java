@@ -2,8 +2,6 @@ package sysc3303_elevator;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,10 +26,12 @@ public class Main {
 	public static final String resourcePath = "input.resources";
 	private static final String HOST_PREFIX = "host:";
 
-	public static Thread RunElevator(InetAddress host, int elevatorId, ArrayList<ElevatorErrorEvent> errorEvents) throws SocketException, UnknownHostException {
+	public static Thread RunElevator(InetAddress host, int elevatorId, ArrayList<ElevatorErrorEvent> errorEvents)
+			throws SocketException, UnknownHostException {
 		var elevatorClient1 = new UdpClientQueue<FloorEvent, ElevatorResponse>(host, elevatorPort);
 
-		var es1 = new ElevatorSubsystem(5, elevatorId, elevatorClient1.getReceiver(), elevatorClient1.getSender(), errorEvents);
+		var es1 = new ElevatorSubsystem(5, elevatorId, elevatorClient1.getReceiver(), elevatorClient1.getSender(),
+				errorEvents);
 
 		return ThreadHelper.runThreads("elevator_prog", new Thread[] {
 				new Thread(elevatorClient1, "elev_c_" + elevatorId),
@@ -44,7 +44,8 @@ public class Main {
 		var elevatorServer = new UdpServerQueue<FloorEvent, ElevatorResponse>(elevatorPort);
 
 		var s1 = new Scheduler<UdpClientIdentifier, UdpClientIdentifier>(elevatorServer, floorServer);
-		SchedulerGUI schedulerGUI = new SchedulerGUI(s1);
+		var schedulerGUI = new SchedulerGUI<UdpClientIdentifier>();
+		s1.addView(schedulerGUI);
 
 		return ThreadHelper.runThreads("scheduler_prog", new Thread[] {
 				new Thread(s1, "scheduler_1"),
@@ -57,7 +58,7 @@ public class Main {
 		var floorClient1 = new UdpClientQueue<Message, FloorEvent>(host, floorPort);
 		var f1 = new Floor(floorClient1.getSender(), floorClient1.getReceiver(), events);
 
-		return ThreadHelper.runThreads("floors_prog",new Thread[] {
+		return ThreadHelper.runThreads("floors_prog", new Thread[] {
 				new Thread(f1, "floor_1"),
 				new Thread(floorClient1, "floor_c_1"), });
 	}
@@ -83,7 +84,6 @@ public class Main {
 		}
 	}
 
-
 	private static StringBuilder join(String[] strings, String delimiter) {
 		var builder = new StringBuilder();
 
@@ -99,7 +99,8 @@ public class Main {
 		return builder;
 	}
 
-	public static void main(String[] args) throws SocketException, UnknownHostException, InterruptedException, FileNotFoundException {
+	public static void main(String[] args)
+			throws SocketException, UnknownHostException, InterruptedException, FileNotFoundException {
 		if (args.length == 0) {
 			args = new String[] { "elevator", "scheduler", "floor" };
 			Logger.println(String.format("Using default arguments: {%s}", join(args, ", ")));
