@@ -220,7 +220,7 @@ public class Scheduler<I, R> implements Runnable {
 		}, "sche_floor_receive");
 		t.start();
 		
-		//Logger.println("Scheduler initialized");
+		Logger.println("Scheduler initialized");
 		for (SchedulerUpdateListener<I> e: views) {
 			e.sendLogMessage("Scheduler initialized" + "\n");
 		}
