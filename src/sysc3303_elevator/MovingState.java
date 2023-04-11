@@ -44,7 +44,7 @@ public class MovingState implements ElevatorState {
 		// opening doors
 		Logger.debugln("Openning doors");
 		elevator.startTimer(ElevatorStatus.DoorClose);
-		Thread.sleep(elevator.getDOOR_OPENNING_CLOSING_TIME());
+		Thread.sleep(elevator.getDOOR_OPENING_CLOSING_TIME());
 
 		if (elevator.checkAndDealWithFaults()) {
 			return;

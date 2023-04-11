@@ -23,8 +23,8 @@ public class DoorClosedState implements ElevatorState {
 			Logger.debugln("Opening doors");
 			elevator.getButtonLampStates()[queue.peek().get()] = ButtonLampState.OFF;
 			elevator.startTimer(ElevatorStatus.DoorClose);
-			
-			Thread.sleep(elevator.getDOOR_OPENNING_CLOSING_TIME());
+
+			Thread.sleep(elevator.getDOOR_OPENING_CLOSING_TIME());
 
 			if (elevator.checkAndDealWithFaults()) {
 				return;

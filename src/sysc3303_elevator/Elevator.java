@@ -160,7 +160,7 @@ public class Elevator implements Runnable {
 	/**
 	 * @return the DOOR_CLOSING_TIME
 	 */
-	public int getDOOR_OPENNING_CLOSING_TIME() {
+	public int getDOOR_OPENING_CLOSING_TIME() {
 		return DOOR_OPENING_CLOSING_TIME;
 	}
 
