@@ -44,7 +44,8 @@ public class Main {
 		var elevatorServer = new UdpServerQueue<FloorEvent, ElevatorResponse>(elevatorPort);
 
 		var s1 = new Scheduler<UdpClientIdentifier, UdpClientIdentifier>(elevatorServer, floorServer);
-		SchedulerGUI schedulerGUI = new SchedulerGUI(s1);
+		var schedulerGUI = new SchedulerGUI<UdpClientIdentifier>();
+		s1.addView(schedulerGUI);
 
 		return ThreadHelper.runThreads("scheduler_prog", new Thread[] {
 				new Thread(s1, "scheduler_1"),
