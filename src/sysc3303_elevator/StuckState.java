@@ -8,14 +8,14 @@ public class StuckState implements ElevatorState {
 		if (elevator.isdoorStuck()) {
 			elevator.setStatus(ElevatorStatus.DoorStuck);
 		} else {
-			elevator.setStatus(ElevatorStatus.StuckBtwFloors);
+			elevator.setStatus(ElevatorStatus.StuckBetweenFloors);
 		}
 	}
 
 	@Override
 	public void advance(Elevator elevator) throws InterruptedException {
 		var queue = elevator.getDestinationFloors();
-		
+
 		if (elevator.isdoorStuck()) {
 			elevator.setdoorStuck(false);
 			if (elevator.getDoorState().equals(DoorState.CLOSED)) {

@@ -7,14 +7,14 @@ public class DoorOpenState implements ElevatorState {
 
 	@Override
 	public void advance(Elevator elevator) throws InterruptedException {
-		
+
 		Thread.sleep(elevator.getLOAD_UNLOAD_TIME()); //simulate loading or unloading an elevator
-		
+
 		Logger.debugln("Closing doors");
 
 		elevator.startTimer(ElevatorStatus.DoorOpen);
 
-		Thread.sleep(elevator.getDOOR_OPENNING_CLOSING_TIME());
+		Thread.sleep(elevator.getDOOR_OPENING_CLOSING_TIME());
 
 		if (elevator.checkAndDealWithFaults()) {
 			return;

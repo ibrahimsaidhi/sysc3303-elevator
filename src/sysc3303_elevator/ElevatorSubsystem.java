@@ -1,7 +1,6 @@
 package sysc3303_elevator;
 
-
-import java.util.*;
+import java.util.ArrayList;
 
 import sysc3303_elevator.networking.BlockingReceiver;
 import sysc3303_elevator.networking.BlockingSender;
@@ -21,18 +20,21 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	private Elevator elevator;
 	private Thread elevatorThread;
 	int elevatorFloors;
-
+	int elevatorId;
+	private ArrayList<ElevatorErrorEvent> errorEvents;
 
 	/**
 	 * Constructor for Elevator Class
+	 *
+	 * @param errorEvents
 	 *
 	 */
 	public ElevatorSubsystem(
 			int numberOfFloors,
 			int elevatorId,
 			BlockingReceiver<FloorEvent> schedulerToElevatorSubsystem,
-			BlockingSender<ElevatorResponse> elevatorSubsystemToScheduler
-	) {
+			BlockingSender<ElevatorResponse> elevatorSubsystemToScheduler,
+			ArrayList<ElevatorErrorEvent> errorEvents) {
 
 		this.schedulerToElevatorSubsystemQueue = schedulerToElevatorSubsystem;
 		this.elevatorSubsystemToSchedulerQueue = elevatorSubsystemToScheduler;
@@ -40,13 +42,14 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 		this.elevator.addObserver(this);
 
 		this.elevatorThread = new Thread(this.elevator, "elevator_state_" + elevatorId);
+		this.elevatorId = elevatorId;
+		this.errorEvents = errorEvents;
 	}
 
-
-	
 	@Override
 	public void run() {
 		Logger.debugln("Elevator subsystem init");
+		assignErrorsToElevator();
 		this.elevatorThread.start();
 		while (true) {
 			try {
@@ -73,6 +76,14 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 			elevatorSubsystemToSchedulerQueue.put(message);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private synchronized void assignErrorsToElevator() {
+		for (ElevatorErrorEvent event : errorEvents) {
+			if (event.id() == this.elevatorId) {
+				this.elevator.addError(event);
+			}
 		}
 	}
 
