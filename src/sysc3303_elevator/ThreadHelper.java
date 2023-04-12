@@ -2,7 +2,12 @@ package sysc3303_elevator;
 
 public class ThreadHelper {
 
-    public static Thread runThreads(String name, Thread[] threads) {
+    static public enum ThreadOption {
+        Start,
+        Waiting
+    }
+
+    public static Thread runThreads(String name, Thread[] threads, ThreadOption option) {
         var t = new Thread(new Runnable() {
 
             @Override
@@ -34,7 +39,9 @@ public class ThreadHelper {
 
         }, name);
 
-        t.start();
+        if (option.equals(ThreadOption.Start)) {
+            t.start();
+        }
         return t;
     }
 

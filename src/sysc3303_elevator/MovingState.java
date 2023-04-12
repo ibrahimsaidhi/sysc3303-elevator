@@ -6,7 +6,7 @@ public class MovingState implements ElevatorState {
 			Thread.sleep(2000); // starting up the motor
 		} catch (InterruptedException e) {
 			return;
-		} 
+		}
 		elevator.setStatus(ElevatorStatus.Moving);
 	}
 
@@ -26,7 +26,7 @@ public class MovingState implements ElevatorState {
 
 			elevator.startTimer(ElevatorStatus.Moving);
 
-			Thread.sleep(elevator.getTIME_BETWEEN_FLOORS());
+			Thread.sleep(elevator.getTimeBetweenFloors());
 			queue.advance();
 			Logger.println("Floor:  " + queue.getCurrentFloor());
 
@@ -49,7 +49,7 @@ public class MovingState implements ElevatorState {
 		// opening doors
 		Logger.debugln("Openning doors");
 		elevator.startTimer(ElevatorStatus.DoorClose);
-		Thread.sleep(elevator.getDOOR_OPENING_CLOSING_TIME());
+		Thread.sleep(elevator.getTimeDoorOpenClose());
 
 		if (elevator.checkAndDealWithFaults(ElevatorStatus.Moving)) {
 			return;
