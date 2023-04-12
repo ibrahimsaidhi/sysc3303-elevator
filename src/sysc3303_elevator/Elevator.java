@@ -214,7 +214,7 @@ public class Elevator implements Runnable {
 				return true;
 			}
 		} else if (status.equals(ElevatorStatus.Moving)) {
-			if (isdoorStuck() || isstuckBetweenFloors()) {
+			if (isstuckBetweenFloors()) {
 				setState(new StuckState(this));
 				return true;
 			}
