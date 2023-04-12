@@ -207,11 +207,13 @@ public class Elevator implements Runnable {
 		if (status.equals(ElevatorStatus.DoorOpen) || (status.equals(ElevatorStatus.DoorClose))) {
 			if (isdoorStuck()) {
 				setState(new StuckState(this));
+				Logger.println("Got door stuck fault");
 				return true;
 			}
 		} else if (status.equals(ElevatorStatus.Moving)) {
 			if (isstuckBetweenFloors()) {
 				setState(new StuckState(this));
+				Logger.println("Got fault stuck between fault");
 				return true;
 			}
 		}

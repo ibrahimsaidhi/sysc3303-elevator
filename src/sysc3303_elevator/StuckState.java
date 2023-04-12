@@ -15,7 +15,7 @@ public class StuckState implements ElevatorState {
 	@Override
 	public void advance(Elevator elevator) throws InterruptedException {
 		var queue = elevator.getDestinationFloors();
-		
+
 		var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 		elevator.notifyObservers(response);
 		Thread.sleep(5000); // Time to deal with fault
