@@ -206,15 +206,27 @@ public class Elevator implements Runnable {
 		}
 	}
 
-	public Boolean checkAndDealWithFaults() {
-		if (isdoorStuck() || isstuckBetweenFloors()) {
-			var queue = this.getDestinationFloors();
-			this.setState(new StuckState(this));
-			var response = new ElevatorResponse(queue.getCurrentFloor(), this.getStatus(), this.getDirection());
-			notifyObservers(response);
-
-			return true;
-		}
+	
+	public Boolean checkAndDealWithFaults(ElevatorStatus status) {
+		if (status.equals(ElevatorStatus.DoorOpen) || (status.equals(ElevatorStatus.DoorClose))) {
+			if (isdoorStuck()) {
+				var queue = this.getDestinationFloors();
+				setState(new StuckState(this));
+				var response = new ElevatorResponse(queue.getCurrentFloor(), this.getStatus(), this.getDirection());
+				notifyObservers(response);
+				
+				return true;
+			}
+		} else if (status.equals(ElevatorStatus.Moving)) {
+			if (isdoorStuck() || isstuckBetweenFloors()) {
+				var queue = this.getDestinationFloors();
+				setState(new StuckState(this));
+				var response = new ElevatorResponse(queue.getCurrentFloor(), this.getStatus(), this.getDirection());
+				notifyObservers(response);
+				return true;
+			}
+		} 
+		
 		return false;
 	}
 

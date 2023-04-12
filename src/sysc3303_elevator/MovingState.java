@@ -25,7 +25,7 @@ public class MovingState implements ElevatorState {
 			queue.advance();
 			Logger.println("Floor:  " + queue.getCurrentFloor());
 
-			if (elevator.checkAndDealWithFaults()) {
+			if (elevator.checkAndDealWithFaults(ElevatorStatus.Moving)) {
 				return;
 			}
 			;
@@ -46,7 +46,7 @@ public class MovingState implements ElevatorState {
 		elevator.startTimer(ElevatorStatus.DoorClose);
 		Thread.sleep(elevator.getDOOR_OPENING_CLOSING_TIME());
 
-		if (elevator.checkAndDealWithFaults()) {
+		if (elevator.checkAndDealWithFaults(ElevatorStatus.Moving)) {
 			return;
 		}
 
