@@ -25,10 +25,10 @@ public class Elevator implements Runnable {
 	private boolean stuckBetweenFloors;
 	private boolean doorStuck;
 	private final int TIME_BETWEEN_FLOORS = 7383; // milliseconds
-	private final int TIME_BETWEEN_FLOORS_THRESHOLD = 7500; // maximum time for moving between floors or closing door in
+	private final int TIME_BETWEEN_FLOORS_THRESHOLD_OFFSET = 200; // maximum time for moving between floors or closing door in
 	private final int DOOR_OPENING_CLOSING_TIME = 1500; // milliseconds
+	private final int DOOR_OPENING_CLOSING_TIME_THRESHOLD_OFFSET = 200;
 	private final int LOAD_UNLOAD_TIME = 6483; // milliseconds
-	private final int DOOR_OPENING_CLOSING_TIME_THRESHOLD = 1700;
 	private Optional<Thread> timer = Optional.empty();
 	private List<ElevatorErrorEvent> errorList;
 	private long startTime; // elevator internal timer
@@ -206,11 +206,11 @@ public class Elevator implements Runnable {
 		}
 	}
 
-	
+
 	public Boolean checkAndDealWithFaults(ElevatorStatus status) {
 		if (status.equals(ElevatorStatus.DoorOpen) || (status.equals(ElevatorStatus.DoorClose))) {
 			if (isdoorStuck()) {
-				setState(new StuckState(this));	
+				setState(new StuckState(this));
 				return true;
 			}
 		} else if (status.equals(ElevatorStatus.Moving)) {
@@ -218,8 +218,8 @@ public class Elevator implements Runnable {
 				setState(new StuckState(this));
 				return true;
 			}
-		} 
-		
+		}
+
 		return false;
 	}
 
@@ -230,21 +230,21 @@ public class Elevator implements Runnable {
 				int previousFloor = destionationQueue.getCurrentFloor();
 
 				if (status.equals(ElevatorStatus.DoorOpen)) {
-					Thread.sleep(DOOR_OPENING_CLOSING_TIME_THRESHOLD);
+					Thread.sleep(DOOR_OPENING_CLOSING_TIME + DOOR_OPENING_CLOSING_TIME_THRESHOLD_OFFSET);
 					if (state.getClass().equals(DoorClosedState.class)) {
 						return;
 					}
 					setdoorStuck(true);
 
 				} else if (status.equals(ElevatorStatus.DoorClose)) {
-					Thread.sleep(DOOR_OPENING_CLOSING_TIME_THRESHOLD);
+					Thread.sleep(DOOR_OPENING_CLOSING_TIME + DOOR_OPENING_CLOSING_TIME_THRESHOLD_OFFSET);
 					if (state.getClass().equals(DoorOpenState.class)) {
 						return;
 					}
 					setdoorStuck(true);
 
 				} else if (status.equals(ElevatorStatus.Moving)) {
-					Thread.sleep(TIME_BETWEEN_FLOORS_THRESHOLD);
+					Thread.sleep(TIME_BETWEEN_FLOORS + TIME_BETWEEN_FLOORS_THRESHOLD_OFFSET);
 					if (previousFloor == destionationQueue.getCurrentFloor()) {
 						setstuckBetweenFloors(true);
 					}
