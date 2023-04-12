@@ -7,17 +7,22 @@ public class DoorClosedState implements ElevatorState {
 
 	@Override
 	public void advance(Elevator elevator) throws InterruptedException {
+		
 		var queue = elevator.getDestinationFloors();
+		var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
+		elevator.notifyObservers(response);
+		
+		
 		if (queue.peek().isEmpty()) {
 			elevator.setState(new IdleState(elevator));
 
-			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
+			response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 			elevator.notifyObservers(response);
 			return;
 		}
 		if (queue.getCurrentFloor() != queue.peek().get()) {
 			elevator.setState(new MovingState(elevator));
-			var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
+			response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 			elevator.notifyObservers(response);
 		} else {
 			Logger.debugln("Opening doors");
@@ -26,7 +31,7 @@ public class DoorClosedState implements ElevatorState {
 
 			Thread.sleep(elevator.getDOOR_OPENING_CLOSING_TIME());
 
-			if (elevator.checkAndDealWithFaults()) {
+			if (elevator.checkAndDealWithFaults(ElevatorStatus.DoorClose)) {
 				return;
 			}
 			elevator.setDoorState(DoorState.OPEN);

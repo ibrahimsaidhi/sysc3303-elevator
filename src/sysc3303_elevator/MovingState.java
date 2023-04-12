@@ -2,6 +2,11 @@ package sysc3303_elevator;
 
 public class MovingState implements ElevatorState {
 	public MovingState(Elevator elevator) {
+		try {
+			Thread.sleep(2000); // starting up the motor
+		} catch (InterruptedException e) {
+			return;
+		} 
 		elevator.setStatus(ElevatorStatus.Moving);
 	}
 
@@ -25,7 +30,7 @@ public class MovingState implements ElevatorState {
 			queue.advance();
 			Logger.println("Floor:  " + queue.getCurrentFloor());
 
-			if (elevator.checkAndDealWithFaults()) {
+			if (elevator.checkAndDealWithFaults(ElevatorStatus.Moving)) {
 				return;
 			}
 			;
@@ -46,7 +51,7 @@ public class MovingState implements ElevatorState {
 		elevator.startTimer(ElevatorStatus.DoorClose);
 		Thread.sleep(elevator.getDOOR_OPENING_CLOSING_TIME());
 
-		if (elevator.checkAndDealWithFaults()) {
+		if (elevator.checkAndDealWithFaults(ElevatorStatus.Moving)) {
 			return;
 		}
 
