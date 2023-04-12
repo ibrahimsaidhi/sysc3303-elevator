@@ -33,8 +33,14 @@ public class MovingState implements ElevatorState {
 			if (elevator.checkAndDealWithFaults(ElevatorStatus.Moving)) {
 				return;
 			}
-			;
 
+			var dest = queue.peek();
+			if (dest.isPresent()) {
+				if (dest.get() != destinationFloor) {
+					Logger.println("Elevator floor change from " + destinationFloor + " to " + dest.get());
+					destinationFloor = dest.get();
+				}
+			}
 		}
 		var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
 		elevator.notifyObservers(response);

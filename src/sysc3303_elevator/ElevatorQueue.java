@@ -23,7 +23,7 @@ public class ElevatorQueue {
     }
 
     public synchronized void add(int src, int dest) {
-        var dependencies =  this.queueDependent.getOrDefault(src, new ArrayList<>());
+        var dependencies = this.queueDependent.getOrDefault(src, new ArrayList<>());
         dependencies.add(dest);
         this.queueDependent.putIfAbsent(src, dependencies);
         this.add(src);
@@ -62,7 +62,6 @@ public class ElevatorQueue {
 
         Collections.reverse(bumped);
         destArray.addAll(bumped);
-
 
         return destArray;
     }
