@@ -75,5 +75,9 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 			e.printStackTrace();
 		}
 	}
+	
+	public Elevator getElevator() {
+		return this.elevator;
+	}
 
 }

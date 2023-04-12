@@ -4,4 +4,6 @@ module sysc3303_elevator {
 	requires java.base;
 	requires org.junit.platform.suite.api;
 	requires java.desktop;
+	requires java.management;
+	requires jdk.management;
 }

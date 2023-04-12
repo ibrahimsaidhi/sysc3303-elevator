@@ -31,6 +31,8 @@ public class Elevator implements Runnable {
 	private final int TIME_BTW_FLOORS_THRESHOLD = 1200; // maximum time for moving between floors or closing door in
 	private final int DOOR_OPENING_CLOSING_TIME_THRESHOLD = 1200;
 	private Optional<Thread> timer = Optional.empty();
+	private Measurements measurement;
+	private long previousStateChangeTime;
 
 	/**
 	 * Constructor for Elevator Class
@@ -50,6 +52,7 @@ public class Elevator implements Runnable {
 		this.observers = new ArrayList<>();
 		this.stuckBtwFloors = false;
 		this.doorStuck = false;
+		//this.measurement = Measurements.getInstance();
 	}
 
 	public boolean isMotorOn() {
@@ -96,6 +99,7 @@ public class Elevator implements Runnable {
 	public void setState(ElevatorState state) {
 		Logger.debugln("State: " + state.getClass().getSimpleName());
 		this.state = state;
+		//System.out.println(measurement.getElapsedTime());
 	}
 
 	public ElevatorState getState() {
@@ -260,6 +264,9 @@ public class Elevator implements Runnable {
 		while (true) {
 			try {
 				state.advance(this);
+		        //cpuMeasurement cpuMeasurement = new cpuMeasurement();
+		        //double cpuLoad = cpuMeasurement.getProcessCpuLoad();
+		        //System.out.println("CPU Load: " + (cpuLoad * 100) + " %");
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				break;

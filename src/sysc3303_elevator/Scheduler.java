@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import sysc3303_elevator.networking.TaggedMsg;
 import sysc3303_elevator.networking.BlockingMultiplexer;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Ibrahim Said
@@ -23,13 +24,16 @@ public class Scheduler<I, R> implements Runnable {
 
 	private ArrayList<FloorEvent> requestQueue = new ArrayList<>();
 	private ArrayList<SchedulerUpdateListener<I>> views = new ArrayList<>();
+	private ConcurrentHashMap<I, Measurements> ElevatorTimers;
+	private ElevatorSubsystem subystem;
 
 	public Scheduler(
-			BlockingMultiplexer<I, FloorEvent, ElevatorResponse> elevatorMux,
-			BlockingMultiplexer<R, Message, FloorEvent> floorMux) {
+		BlockingMultiplexer<I, FloorEvent, ElevatorResponse> elevatorMux,
+		BlockingMultiplexer<R, Message, FloorEvent> floorMux) {
 		this.elevatorStateCache = new HashMap<>();
 		this.elevatorMux = elevatorMux;
 		this.floorMux = floorMux;
+		ElevatorTimers = new ConcurrentHashMap<>();
 	}
 	
 	public void addView(SchedulerUpdateListener<I> e) {
@@ -40,6 +44,11 @@ public class Scheduler<I, R> implements Runnable {
 		views.remove(e);
 	}
 
+	public ElevatorQueue getElevator(ElevatorSubsystem subsytem) {
+		return subsytem.getElevator().getDestinationFloors();
+	}
+	
+
 	public void trySendElevatorGoto() throws InterruptedException {
 		Logger.debugln("Elevator States:");
 		
@@ -47,6 +56,7 @@ public class Scheduler<I, R> implements Runnable {
 			Logger.debugln("   " + entry.getKey() + " " + entry.getValue());
 			
 		}
+	
 
 		// TODO: Narrow down the sync block
 		synchronized (this.requestQueue) {
@@ -93,6 +103,7 @@ public class Scheduler<I, R> implements Runnable {
 					var elevatorInfo = newRequest.second();
 
 					// Found idle elevator. Send request!
+					//this.startElevatorTimer(channelId);
 					Logger.println("Goto:  Sending to " + channelId + " with state " + elevatorInfo.toString()
 							+ " (up append)");
 					if (this.requestQueue.remove(upRequest)) {
@@ -148,6 +159,8 @@ public class Scheduler<I, R> implements Runnable {
 					var channelId = newRequest.first();
 					var elevatorInfo = newRequest.second();
 					// Found idle elevator. Send request!
+					
+					//this.startElevatorTimer(channelId);
 					Logger.println("Goto:  Sending to " + channelId + " with state " + elevatorInfo.toString()
 							+ " (down append)");
 					if (this.requestQueue.remove(downRequest)) {
@@ -173,6 +186,8 @@ public class Scheduler<I, R> implements Runnable {
 					if (!elevatorInfo.state().equals(ElevatorStatus.ShutDown)) {
 						if (elevatorInfo.state().equals(ElevatorStatus.Idle)) {
 							// Found idle elevator. Send request!
+							//measurements.startTimer();
+							//this.startElevatorTimer(channelId);
 							Logger.println("Goto:  Sending to " + channelId + " with state " + elevatorInfo.toString());
 							this.elevatorMux
 									.put(new TaggedMsg<I, FloorEvent>(channelId, this.requestQueue.remove(0)));
@@ -200,6 +215,7 @@ public class Scheduler<I, R> implements Runnable {
 			public void run() {
 				while (true) {
 					try {
+						
 						TaggedMsg<R, FloorEvent> event = floorMux.take();
 						FloorEvent e = event.content();
 						Logger.debugln("Got " + event.toString());
@@ -227,6 +243,7 @@ public class Scheduler<I, R> implements Runnable {
 
 		while (true) {
 			try {
+				//here event.id == channel id 
 				TaggedMsg<I, ElevatorResponse> event = elevatorMux.take();
 				ElevatorResponse response = event.content();
 				Logger.debugln("Got " + event.toString());
@@ -237,11 +254,16 @@ public class Scheduler<I, R> implements Runnable {
 				this.elevatorStateCache.put(event.id(), response);
 
 				trySendElevatorGoto();
+				//2 is a placeholder
+				//if //(ElevatorTimers.containsKey(event.id()) && (event.content().currentFloor() == 2) &&(event.content().state().equals(ElevatorStatus.Idle))) {
+					//stopElevatorTimer(event.id());
+					//Measurements endTime = ElevatorTimers.get(event.id());
+					//System.out.println(endTime.getElapsedTime());
+				//}
 			} catch (InterruptedException e) {
 				break;
 			}
 		}
-
 		Logger.println("Scheduler interrupted");
 		for (SchedulerUpdateListener<I> e: views) {
 			e.sendLogMessage("Scheduler interrupted" + "\n");

@@ -11,11 +11,16 @@ public class ElevatorQueue {
     private ArrayList<Integer> queue;
     private HashMap<Integer, ArrayList<Integer>> queueDependent;
     private int currentFloor;
+    
 
     public ElevatorQueue(int currentFloor) {
         this.queue = new ArrayList<>();
         this.queueDependent = new HashMap<>();
         this.currentFloor = currentFloor;
+    }
+    
+    public synchronized int getSize() {
+    	return queue.size();
     }
 
     public synchronized Direction getDirection() {

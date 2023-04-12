@@ -24,11 +24,14 @@ public class Main {
 	private static final Integer elevatorPort = 10102;
 	private static final String FILE_PATH = "input.txt";
 	private static final String HOST_PREFIX = "host:";
+	private static ElevatorSubsystem es;
+	private static Floor floor;
 
 	public static Thread RunElevator(InetAddress host, int elevatorId) throws SocketException, UnknownHostException {
 		var elevatorClient1 = new UdpClientQueue<FloorEvent, ElevatorResponse>(host, elevatorPort);
 
 		var es1 = new ElevatorSubsystem(5, elevatorId, elevatorClient1.getReceiver(), elevatorClient1.getSender());
+		es = es1;
 		
 		return ThreadHelper.runThreads("elevator_prog", new Thread[] {
 				new Thread(elevatorClient1, "elev_c_" + elevatorId),
@@ -51,9 +54,10 @@ public class Main {
 	}
 
 	public static Thread RunFloor(InetAddress host, ArrayList<FloorEvent> events)
-			throws SocketException, UnknownHostException {
+		throws SocketException, UnknownHostException {
 		var floorClient1 = new UdpClientQueue<Message, FloorEvent>(host, floorPort);
 		var f1 = new Floor(floorClient1.getSender(), floorClient1.getReceiver(), events);
+		floor = f1;
 
 		return ThreadHelper.runThreads("floors_prog", new Thread[] {
 				new Thread(f1, "floor_1"),
@@ -88,6 +92,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws SocketException, UnknownHostException, InterruptedException {
+		
 		if (args.length == 0) {
 			args = new String[] { "elevator", "scheduler", "floor" };
 			Logger.println(String.format("Using default arguments: {%s}", join(args, ", ")));
@@ -99,7 +104,8 @@ public class Main {
 		if (fileStream.isEmpty()) {
 			return; // If the InputStream is empty, stop the program execution
 		}
-
+		//Measurements measurements = Measurements.getInstance();
+		//measurements.startTimer();
 		var floorReader = new FloorFormatReader(fileStream.get());
 		var events = floorReader.toList();
 
@@ -147,9 +153,11 @@ public class Main {
 				}
 			}
 		}
-
+		Measurements timer = new Measurements(es, floor);
+		Thread timerThread = new Thread(timer);
+		timerThread.start();
+		System.out.println("start timer");
 		ThreadHelper.runThreads("root", tasks.toArray(new Thread[tasks.size()])).join();
-
 		Logger.println("All done.");
 	}
 

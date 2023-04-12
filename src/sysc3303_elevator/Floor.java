@@ -23,6 +23,7 @@ public class Floor implements Runnable {
 	private BlockingReceiver<Message> schedulerToFloor;
 	private ArrayList<FloorEvent> eventList;
 	private Optional<LocalTime> firstTime = Optional.empty();
+	private Measurements measurement;
 
 	/**
 	 * Constructer class for Floor
@@ -37,7 +38,7 @@ public class Floor implements Runnable {
 	 */
 
 	public Floor(BlockingSender<FloorEvent> floorToSchedular, BlockingReceiver<Message> schedulerToFloor,
-			ArrayList<FloorEvent> eventList) {
+		ArrayList<FloorEvent> eventList) {
 		this.floorToScheduler = floorToSchedular;
 		this.schedulerToFloor = schedulerToFloor;
 		this.eventList = eventList;
@@ -94,7 +95,10 @@ public class Floor implements Runnable {
 			e.printStackTrace();
 		}
 	}
-
+	
+	public ArrayList<FloorEvent> getEventList() {
+		return this.eventList;
+	}
 	public void run() {
 		while (true) {
 			while (!eventList.isEmpty()) {
