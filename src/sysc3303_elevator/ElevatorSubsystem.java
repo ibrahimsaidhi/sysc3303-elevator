@@ -30,7 +30,7 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 	 *
 	 */
 	public ElevatorSubsystem(
-			int numberOfFloors,
+			ElevatorSettings settings,
 			int elevatorId,
 			BlockingReceiver<FloorEvent> schedulerToElevatorSubsystem,
 			BlockingSender<ElevatorResponse> elevatorSubsystemToScheduler,
@@ -38,7 +38,7 @@ public class ElevatorSubsystem implements Runnable, ElevatorObserver {
 
 		this.schedulerToElevatorSubsystemQueue = schedulerToElevatorSubsystem;
 		this.elevatorSubsystemToSchedulerQueue = elevatorSubsystemToScheduler;
-		this.elevator = new Elevator(numberOfFloors);
+		this.elevator = new Elevator(settings);
 		this.elevator.addObserver(this);
 
 		this.elevatorThread = new Thread(this.elevator, "elevator_state_" + elevatorId);

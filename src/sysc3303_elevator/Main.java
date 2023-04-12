@@ -29,7 +29,16 @@ public class Main {
 			throws SocketException, UnknownHostException {
 		var elevatorClient1 = new UdpClientQueue<FloorEvent, ElevatorResponse>(host, elevatorPort);
 
-		var es1 = new ElevatorSubsystem(5, elevatorId, elevatorClient1.getReceiver(), elevatorClient1.getSender(),
+		var settings = new ElevatorSettings(
+				5,
+				7383,
+				200,
+				1500,
+				200,
+				6483);
+
+		var es1 = new ElevatorSubsystem(settings, elevatorId, elevatorClient1.getReceiver(),
+				elevatorClient1.getSender(),
 				errorEvents);
 
 		return ThreadHelper.runThreads("elevator_prog", new Thread[] {

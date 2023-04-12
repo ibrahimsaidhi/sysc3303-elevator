@@ -24,11 +24,7 @@ public class Elevator implements Runnable {
 	private List<ElevatorObserver> observers;
 	private boolean stuckBetweenFloors;
 	private boolean doorStuck;
-	private final int TIME_BETWEEN_FLOORS = 7383; // milliseconds
-	private final int TIME_BETWEEN_FLOORS_THRESHOLD_OFFSET = 200; // maximum time for moving between floors or closing door in
-	private final int DOOR_OPENING_CLOSING_TIME = 1500; // milliseconds
-	private final int DOOR_OPENING_CLOSING_TIME_THRESHOLD_OFFSET = 200;
-	private final int LOAD_UNLOAD_TIME = 6483; // milliseconds
+	private final ElevatorSettings settings;
 	private Optional<Thread> timer = Optional.empty();
 	private List<ElevatorErrorEvent> errorList;
 	private long startTime; // elevator internal timer
@@ -37,14 +33,14 @@ public class Elevator implements Runnable {
 	 * Constructor for Elevator Class
 	 *
 	 */
-	public Elevator(int numberOfFloors) {
-
+	public Elevator(ElevatorSettings settings) {
+		this.settings = settings;
 		this.isMoving = false;
 		this.isMotorOn = false;
 		this.doorState = DoorState.CLOSED;
 		this.destionationQueue = new ElevatorQueue(1);
 
-		this.buttonLampStates = new ButtonLampState[numberOfFloors];
+		this.buttonLampStates = new ButtonLampState[settings.numberOfFloors()];
 		Arrays.fill(buttonLampStates, ButtonLampState.OFF);
 
 		this.state = new ElevatorInitState(this);
@@ -152,22 +148,22 @@ public class Elevator implements Runnable {
 	/**
 	 * @return the tIME_BTEWEEN_FLOORS
 	 */
-	public int getTIME_BETWEEN_FLOORS() {
-		return TIME_BETWEEN_FLOORS;
+	public int getTimeBetweenFloors() {
+		return this.settings.betweenFloorsMs();
 	}
 
 	/**
 	 * @return the DOOR_CLOSING_TIME
 	 */
-	public int getDOOR_OPENING_CLOSING_TIME() {
-		return DOOR_OPENING_CLOSING_TIME;
+	public int getTimeDoorOpenClose() {
+		return this.settings.doorOpeningClosingMs();
 	}
 
 	/**
 	 * @return the lOAD_UNLOAD_TIME
 	 */
-	public int getLOAD_UNLOAD_TIME() {
-		return LOAD_UNLOAD_TIME;
+	public int getTimeLoadUnload() {
+		return this.settings.loadUnloadMs();
 	}
 
 	/**
@@ -230,21 +226,21 @@ public class Elevator implements Runnable {
 				int previousFloor = destionationQueue.getCurrentFloor();
 
 				if (status.equals(ElevatorStatus.DoorOpen)) {
-					Thread.sleep(DOOR_OPENING_CLOSING_TIME + DOOR_OPENING_CLOSING_TIME_THRESHOLD_OFFSET);
+					Thread.sleep(this.settings.doorOpeningClosingMs() + this.settings.doorOpeningClosingThresholdOffsetMs());
 					if (state.getClass().equals(DoorClosedState.class)) {
 						return;
 					}
 					setdoorStuck(true);
 
 				} else if (status.equals(ElevatorStatus.DoorClose)) {
-					Thread.sleep(DOOR_OPENING_CLOSING_TIME + DOOR_OPENING_CLOSING_TIME_THRESHOLD_OFFSET);
+					Thread.sleep(this.settings.doorOpeningClosingMs() + this.settings.doorOpeningClosingThresholdOffsetMs());
 					if (state.getClass().equals(DoorOpenState.class)) {
 						return;
 					}
 					setdoorStuck(true);
 
 				} else if (status.equals(ElevatorStatus.Moving)) {
-					Thread.sleep(TIME_BETWEEN_FLOORS + TIME_BETWEEN_FLOORS_THRESHOLD_OFFSET);
+					Thread.sleep(this.settings.betweenFloorsMs() + this.settings.betweenFloorsThresholdOffsetMs());
 					if (previousFloor == destionationQueue.getCurrentFloor()) {
 						setstuckBetweenFloors(true);
 					}
