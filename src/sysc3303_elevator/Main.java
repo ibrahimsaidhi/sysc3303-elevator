@@ -24,7 +24,6 @@ public class Main {
 	private static final Integer floorPort = 10101;
 	private static final Integer elevatorPort = 10102;
 	public static final String resourcePath = "input.resources";
-	private static final String HOST_PREFIX = "host:";
 
 	public static Thread RunElevator(InetAddress host, int elevatorId, ArrayList<ElevatorErrorEvent> errorEvents)
 			throws SocketException, UnknownHostException {
@@ -147,7 +146,28 @@ public class Main {
 					tasks.add(RunFloor(host, new ArrayList<>(floorEvents)));
 					break;
 				}
+				case "debug":
+				case "-v":
+				case "d": {
+					Logger.setDebug(true);
+					break;
+				}
+				case "nodebug": {
+					Logger.setDebug(false);
+					break;
+				}
+				case "perf":
+				case "-p":
+				case "p": {
+					Logger.setPerf(true);
+					break;
+				}
+				case "noperf": {
+					Logger.setPerf(false);
+					break;
+				}
 				default: {
+					final String HOST_PREFIX = "host:";
 					if (arg.startsWith(HOST_PREFIX)) {
 						var hostString = arg.substring(HOST_PREFIX.length()).strip();
 						if (hostString.length() > 0) {

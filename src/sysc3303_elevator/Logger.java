@@ -1,28 +1,36 @@
 package sysc3303_elevator;
 
 public class Logger {
-	private static final boolean DEBUG = false;
-	private static final boolean PERFORMANCE = false;
+	private static boolean shouldDebugLog = false;
+	private static boolean shouldPerformanceLog = false;
 
 	public synchronized static void debugln(String msg) {
-		if (PERFORMANCE) {
+		if (shouldPerformanceLog) {
 			return;
 		}
-		if (DEBUG) {
+		if (shouldDebugLog) {
 			System.out.println(String.format("%18s: -%s", Thread.currentThread().getName(), msg));
 		}
 	}
 
 	public synchronized static void println(String msg) {
-		if (PERFORMANCE) {
+		if (shouldPerformanceLog) {
 			return;
 		}
 		System.out.println(String.format("%18s: %s", Thread.currentThread().getName(), msg));
 	}
 
 	public synchronized static void outputPerf(String msg) {
-		if (PERFORMANCE) {
+		if (shouldPerformanceLog) {
 			System.out.println(msg);
 		}
+	}
+
+	public synchronized static void setDebug(boolean debug) {
+		shouldDebugLog = debug;
+	}
+
+	public synchronized static void setPerf(boolean performance) {
+		shouldPerformanceLog = performance;
 	}
 }
