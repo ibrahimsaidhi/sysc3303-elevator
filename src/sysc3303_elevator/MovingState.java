@@ -2,6 +2,11 @@ package sysc3303_elevator;
 
 public class MovingState implements ElevatorState {
 	public MovingState(Elevator elevator) {
+		try {
+			Thread.sleep(2000); // starting up the motor
+		} catch (InterruptedException e) {
+			return;
+		} 
 		elevator.setStatus(ElevatorStatus.Moving);
 	}
 

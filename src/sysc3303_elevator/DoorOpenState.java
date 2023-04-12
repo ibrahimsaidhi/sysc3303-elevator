@@ -7,6 +7,10 @@ public class DoorOpenState implements ElevatorState {
 
 	@Override
 	public void advance(Elevator elevator) throws InterruptedException {
+		
+		var queue = elevator.getDestinationFloors();
+		var response = new ElevatorResponse(queue.getCurrentFloor(), elevator.getStatus(), elevator.getDirection());
+		elevator.notifyObservers(response);
 
 		Thread.sleep(elevator.getLOAD_UNLOAD_TIME()); //simulate loading or unloading an elevator
 

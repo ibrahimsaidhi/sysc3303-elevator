@@ -24,8 +24,8 @@ public class Elevator implements Runnable {
 	private List<ElevatorObserver> observers;
 	private boolean stuckBetweenFloors;
 	private boolean doorStuck;
-	private final int TIME_BETWEEN_FLOORS = 9383; // milliseconds
-	private final int TIME_BETWEEN_FLOORS_THRESHOLD = 9500; // maximum time for moving between floors or closing door in
+	private final int TIME_BETWEEN_FLOORS = 7383; // milliseconds
+	private final int TIME_BETWEEN_FLOORS_THRESHOLD = 7500; // maximum time for moving between floors or closing door in
 	private final int DOOR_OPENING_CLOSING_TIME = 1500; // milliseconds
 	private final int LOAD_UNLOAD_TIME = 6483; // milliseconds
 	private final int DOOR_OPENING_CLOSING_TIME_THRESHOLD = 1700;
