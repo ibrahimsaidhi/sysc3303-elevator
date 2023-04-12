@@ -11,6 +11,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import sysc3303_elevator.ThreadHelper.ThreadOption;
 import sysc3303_elevator.networking.UdpClientQueue;
 import sysc3303_elevator.networking.UdpServerQueue;
 import sysc3303_elevator.networking.UdpServerQueue.UdpClientIdentifier;
@@ -25,17 +26,10 @@ public class Main {
 	private static final Integer elevatorPort = 10102;
 	public static final String resourcePath = "input.resources";
 
-	public static Thread RunElevator(InetAddress host, int elevatorId, ArrayList<ElevatorErrorEvent> errorEvents)
+	public static Thread RunElevator(InetAddress host, int elevatorId, ElevatorSettings settings,
+			ArrayList<ElevatorErrorEvent> errorEvents)
 			throws SocketException, UnknownHostException {
 		var elevatorClient1 = new UdpClientQueue<FloorEvent, ElevatorResponse>(host, elevatorPort);
-
-		var settings = new ElevatorSettings(
-				5,
-				7383,
-				200,
-				1500,
-				200,
-				6483);
 
 		var es1 = new ElevatorSubsystem(settings, elevatorId, elevatorClient1.getReceiver(),
 				elevatorClient1.getSender(),
@@ -43,7 +37,7 @@ public class Main {
 
 		return ThreadHelper.runThreads("elevator_prog", new Thread[] {
 				new Thread(elevatorClient1, "elev_c_" + elevatorId),
-				new Thread(es1, "elevator_syst__" + elevatorId) });
+				new Thread(es1, "elevator_syst__" + elevatorId) }, ThreadOption.Waiting);
 	}
 
 	public static Thread RunScheduler() throws SocketException, UnknownHostException {
@@ -58,7 +52,7 @@ public class Main {
 		return ThreadHelper.runThreads("scheduler_prog", new Thread[] {
 				new Thread(s1, "scheduler_1"),
 				new Thread(floorServer, "floor_serv"),
-				new Thread(elevatorServer, "elev_serv"), });
+				new Thread(elevatorServer, "elev_serv"), }, ThreadOption.Waiting);
 	}
 
 	public static Thread RunFloor(InetAddress host, ArrayList<FloorEvent> events)
@@ -68,7 +62,7 @@ public class Main {
 
 		return ThreadHelper.runThreads("floors_prog", new Thread[] {
 				new Thread(f1, "floor_1"),
-				new Thread(floorClient1, "floor_c_1"), });
+				new Thread(floorClient1, "floor_c_1"), }, ThreadOption.Waiting);
 	}
 
 	private static Optional<InputStream> readFile() throws FileNotFoundException {
@@ -130,6 +124,14 @@ public class Main {
 		int elevator_id_counter = 1;
 		var tasks = new ArrayList<Thread>();
 		Optional<InetAddress> hostOptional = Optional.empty();
+		int optionFloorCount = 22;
+		int optionBetweenFloors = 7383;
+		Optional<Integer> optionOpenClose = Optional.empty(); // 1500;
+		Optional<Integer> optionLoadUnload = Optional.empty(); // 6483;
+
+		final String TIME_OPEN_DOOR_OPTION = "open_close_door=";
+		final String TIME_LOAD_UNLOAD_OPTION = "load_unload=";
+
 		for (var argRaw : args) {
 			var arg = argRaw.toLowerCase();
 			switch (arg) {
@@ -138,7 +140,22 @@ public class Main {
 					var host = hostOptional.orElse(InetAddress.getLocalHost());
 					Logger.println(
 							String.format("Creating elevator %s (connecting to '%s')", elevator_id_counter, host));
-					tasks.add(RunElevator(host, elevator_id_counter, errorEvents));
+					if (optionOpenClose.isEmpty())
+						throw new RuntimeException(String.format(
+								"Missing '%s' argument (must be before creating elevator arg)", TIME_OPEN_DOOR_OPTION));
+					if (optionLoadUnload.isEmpty())
+						throw new RuntimeException(
+								String.format("Missing '%s' argument (must be before creating elevator arg)",
+										TIME_LOAD_UNLOAD_OPTION));
+					var settings = new ElevatorSettings(
+							optionFloorCount,
+							optionBetweenFloors,
+							200,
+							optionOpenClose.get(),
+							200,
+							optionLoadUnload.get());
+
+					tasks.add(RunElevator(host, elevator_id_counter, settings, errorEvents));
 					elevator_id_counter += 1;
 					break;
 				}
@@ -176,24 +193,75 @@ public class Main {
 					break;
 				}
 				default: {
-					final String HOST_PREFIX = "host:";
-					if (arg.startsWith(HOST_PREFIX)) {
-						var hostString = arg.substring(HOST_PREFIX.length()).strip();
+					final String HOST_OPTION = "host=";
+					final String TIME_BETWEEN_FLOORS_OPTION = "between_floors=";
+					final String FLOOR_COUNT = "floors=";
+					if (arg.startsWith(HOST_OPTION)) {
+						var hostString = arg.substring(HOST_OPTION.length()).strip();
 						if (hostString.length() > 0) {
 							hostOptional = Optional.of(InetAddress.getByName(hostString));
 						} else {
 							hostOptional = Optional.empty();
 						}
+					} else if (arg.startsWith(TIME_OPEN_DOOR_OPTION)) {
+						var subString = arg.substring(TIME_OPEN_DOOR_OPTION.length()).strip();
+						try {
+							optionOpenClose = Optional.of(Integer.parseInt(subString));
+						} catch (NumberFormatException ex) {
+							throw new RuntimeException(String.format("'%s' was not passed a valid number.", subString));
+						}
+					} else if (arg.startsWith(TIME_LOAD_UNLOAD_OPTION)) {
+						var subString = arg.substring(TIME_LOAD_UNLOAD_OPTION.length()).strip();
+						try {
+							optionLoadUnload = Optional.of(Integer.parseInt(subString));
+						} catch (NumberFormatException ex) {
+							throw new RuntimeException(String.format("'%s' was not passed a valid number.", subString));
+						}
+					} else if (arg.startsWith(TIME_BETWEEN_FLOORS_OPTION)) {
+						var subString = arg.substring(TIME_BETWEEN_FLOORS_OPTION.length()).strip();
+						try {
+							optionBetweenFloors = Integer.parseInt(subString);
+						} catch (NumberFormatException ex) {
+							throw new RuntimeException(String.format("'%s' was not passed a valid number.", subString));
+						}
+					} else if (arg.startsWith(FLOOR_COUNT)) {
+						var subString = arg.substring(FLOOR_COUNT.length()).strip();
+						try {
+							optionFloorCount = Integer.parseInt(subString);
+						} catch (NumberFormatException ex) {
+							throw new RuntimeException(String.format("'%s' was not passed a valid number.", subString));
+						}
 					} else {
+						var params = new ArrayList<String>();
+						params.add("elevator");
+						params.add("e");
+						params.add("scheduler");
+						params.add("s");
+						params.add("floor");
+						params.add("f");
+						params.add("debug");
+						params.add("-v");
+						params.add("d");
+						params.add("nodebug");
+						params.add("perf");
+						params.add("-p");
+						params.add("p");
+						params.add("noperf");
+						params.add(HOST_OPTION);
+						params.add(TIME_BETWEEN_FLOORS_OPTION);
+						params.add(FLOOR_COUNT);
+						params.add(TIME_OPEN_DOOR_OPTION);
+						params.add(TIME_LOAD_UNLOAD_OPTION);
 						throw new RuntimeException(String.format(
-								"Argument '%s' is not valid. Use either 'elevator', 'e', 'scheduler', 's', 'floor', 'f', 'host:*'",
+								"Argument '%s' is not valid. Use either "
+										+ join(params.toArray(new String[params.size()]), ", "),
 								arg));
 					}
 				}
 			}
 		}
 
-		ThreadHelper.runThreads("root", tasks.toArray(new Thread[tasks.size()])).join();
+		ThreadHelper.runThreads("root", tasks.toArray(new Thread[tasks.size()]), ThreadOption.Start).join();
 
 		Logger.println("All done.");
 	}
