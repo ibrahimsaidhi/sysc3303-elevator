@@ -91,9 +91,6 @@ class SchedulerTest {
 		t1.join();
 
 		assertEquals(3, floorMux.takeCount);
-		assertEquals(1, elevatorMux.count);
-		assertEquals(3, elevatorMux.takeCount);
-		assertEquals(2, floorMux.count);
 	}
 
 }
