@@ -19,3 +19,6 @@ A multi-threaded Java project that simulates the behaviour of an elevator. Serve
 -  Run Main.main() in Eclipse
 -  Open the Swing application
 
+## Contributers
+Kamsi Ekweozor, Tao Lufula, Quinn Parrott, Ibrahim Said, Hamza Zafar
+
